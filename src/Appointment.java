@@ -16,10 +16,6 @@ public class Appointment {
 	private int end;
 	private ArrayList<Integer> participants;
 	
-	protected enum Day{
-		SUNDAY, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY
-	}
-	
 	public Appointment(String name, Day day, int start, int end, ArrayList<Integer> participants) {
 		// TODO Auto-generated constructor stub
 		this.name = name;
