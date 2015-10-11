@@ -23,10 +23,10 @@ public class Appointment {
 	public Appointment(String name, Day day, int start, int end, ArrayList<Integer> participants) {
 		// TODO Auto-generated constructor stub
 		this.name = name;
-		this.setDay(day);
-		this.setStart(start);
-		this.setEnd(end);
-		this.setParticipants(new ArrayList<Integer>());	
+		this.day = day;
+		this.start = start;
+		this.end = end;
+		this.participants = new ArrayList<Integer>();
 	}
 	
 	public String getName() {
@@ -38,7 +38,7 @@ public class Appointment {
 	}
 
 	public Day getDay() {
-		return day;
+		return this.day;
 	}
 
 	public void setDay(Day day) {
@@ -46,7 +46,7 @@ public class Appointment {
 	}
 
 	public int getStart() {
-		return start;
+		return this.start;
 	}
 
 	public void setStart(int start) {
@@ -54,7 +54,7 @@ public class Appointment {
 	}
 
 	public int getEnd() {
-		return end;
+		return this.end;
 	}
 
 	public void setEnd(int end) {
@@ -62,7 +62,7 @@ public class Appointment {
 	}
 
 	public ArrayList<Integer> getParticipants() {
-		return participants;
+		return this.participants;
 	}
 
 	public void setParticipants(ArrayList<Integer> participants) {
