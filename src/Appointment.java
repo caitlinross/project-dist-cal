@@ -22,7 +22,7 @@ public class Appointment {
 		this.day = day;
 		this.start = start;
 		this.end = end;
-		this.participants = new ArrayList<Integer>();
+		this.participants = participants;
 	}
 	
 	public String getName() {
