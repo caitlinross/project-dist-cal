@@ -7,8 +7,16 @@
  *
  */
 import java.util.*;
+import java.net.*;
+import java.io.*;
 
 public class Node {
+	private int port;
+	private String hostName;
+	private Socket socket;
+	private PrintWriter out;
+	private BufferedReader in;
+	private BufferedReader stdIn;
 	private int nodeId;
 	private int calendars[][][];
 	private static int numNodes = 0; 
@@ -21,11 +29,13 @@ public class Node {
 	private Set<Appointment> currentAppts;
 	private int T[][];
 	private int c;
+	
 	/**
 	 * 
 	 */
-	public Node(int totalNodes) {
+	public Node(int totalNodes, int port, String hostName) {
 		// TODO Auto-generated constructor stub
+		
 		this.nodeId = Node.numNodes;
 		Node.numNodes++;
 		
@@ -38,6 +48,27 @@ public class Node {
 		this.currentAppts = new HashSet<Appointment>();
 		this.T = new int[totalNodes][totalNodes];
 		this.c = 0;
+		
+		this.port = port;
+		this.hostName = hostName;
+		// set up socket connection
+		
+		try {
+			socket = new Socket(hostName, port);
+			this.out = new PrintWriter(socket.getOutputStream(), true);
+			this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			this.stdIn = new BufferedReader(new InputStreamReader(System.in));
+		} 
+		catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+			
+		
 	}
 
 	/**
@@ -97,6 +128,10 @@ public class Node {
 	}
 	
 	public void send(){
+		
+	}
+	
+	public void receive(){
 		
 	}
 
