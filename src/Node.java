@@ -13,7 +13,8 @@ import java.io.*;
 public class Node {
 	private int port;
 	private String hostName;
-	private Socket socket;
+	private ServerSocket serverSocket;
+	private Socket clientSocket;
 	private PrintWriter out;
 	private BufferedReader in;
 	private BufferedReader stdIn;
@@ -51,20 +52,16 @@ public class Node {
 		
 		this.port = port;
 		this.hostName = hostName;
-		// set up socket connection
 		
-		try {
-			socket = new Socket(hostName, port);
-			this.out = new PrintWriter(socket.getOutputStream(), true);
-			this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			this.stdIn = new BufferedReader(new InputStreamReader(System.in));
-		} 
-		catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} 
+		// set up socket connection
+		try{
+			serverSocket = new ServerSocket(port);
+		}
 		catch (IOException e) {
 			// TODO Auto-generated catch block
+			 System.out.println("Exception caught when trying to listen on port "
+		                + port);
+		    System.out.println(e.getMessage());
 			e.printStackTrace();
 		}
 			
@@ -132,6 +129,28 @@ public class Node {
 	}
 	
 	public void receive(){
+		try {
+			
+			clientSocket = serverSocket.accept();
+			this.out = new PrintWriter(clientSocket.getOutputStream(), true);
+			this.in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+			//this.stdIn = new BufferedReader(new InputStreamReader(System.in));
+			String inputLine;
+            while ((inputLine = in.readLine()) != null) {
+                out.println(inputLine);
+            }
+		} 
+		catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		catch (IOException e) {
+			// TODO Auto-generated catch block
+			 System.out.println("Exception caught when trying to listen on port "
+		                + port + " or listening for a connection");
+		    System.out.println(e.getMessage());
+			e.printStackTrace();
+		}
 		
 	}
 
