@@ -7,14 +7,11 @@ import java.net.*;
 import java.io.*;
 
 public class Node {
-	private int port;
-	private String hostName;
-	private Thread thread;
-	private ServerSocket serverSocket;
-	//private Socket clientSocket;
-	private PrintWriter out;
-	private BufferedReader in;
-	private BufferedReader stdIn;
+//	private int port;
+//	private String hostName;
+//	private Thread thread;
+//	private ServerSocket serverSocket;
+	
 	private int nodeId;
 	private int calendars[][][];
 	private static int numNodes = 0; 
@@ -46,8 +43,6 @@ public class Node {
 		this.currentAppts = new HashSet<Appointment>();
 		this.T = new int[totalNodes][totalNodes];
 		this.c = 0;
-		
-		this.port = port;
 		
 	}
 
@@ -114,25 +109,29 @@ public class Node {
 	
 	public void receive(Socket clientSocket){
 		try {
-			this.out = new PrintWriter(clientSocket.getOutputStream(), true);
-			this.in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-			//this.stdIn = new BufferedReader(new InputStreamReader(System.in));
-			String inputLine;
-            while ((inputLine = in.readLine()) != null) {
-                out.println(inputLine);
-            }
-		} 
-		catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			// get the Appointment object from the message
+			PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+			InputStream in = clientSocket.getInputStream();
+			ObjectInputStream objectInput = new ObjectInputStream(in);
+			Appointment appt = (Appointment)objectInput.readObject();
+			if (appt != null){
+				System.out.println(appt);
+			}
+			
+//			BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+//			String inputLine;
+//            while ((inputLine = in.readLine()) != null) {
+//                out.println(inputLine);
+//            }
 		} 
 		catch (IOException e) {
 			// TODO Auto-generated catch block
-			 System.out.println("Exception caught when trying to listen on port "
-		                + port + " or listening for a connection");
-		    System.out.println(e.getMessage());
 			e.printStackTrace();
-		}
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		
 		
 	}
 

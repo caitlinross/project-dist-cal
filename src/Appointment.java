@@ -3,10 +3,11 @@
  *
  */
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Appointment {
-
+public class Appointment implements Serializable {
+	// all fields are serializable
 	private String name;
 	private Day day;
 	private int start;
