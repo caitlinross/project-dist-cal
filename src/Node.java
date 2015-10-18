@@ -1,8 +1,4 @@
 /**
- * 
- */
-
-/**
  * @author Caitlin Ross and Erika Mackin
  *
  */
@@ -13,8 +9,9 @@ import java.io.*;
 public class Node {
 	private int port;
 	private String hostName;
+	private Thread thread;
 	private ServerSocket serverSocket;
-	private Socket clientSocket;
+	//private Socket clientSocket;
 	private PrintWriter out;
 	private BufferedReader in;
 	private BufferedReader stdIn;
@@ -34,7 +31,7 @@ public class Node {
 	/**
 	 * 
 	 */
-	public Node(int totalNodes, int port, String hostName) {
+	public Node(int totalNodes, int port) {
 		// TODO Auto-generated constructor stub
 		
 		this.nodeId = Node.numNodes;
@@ -51,20 +48,6 @@ public class Node {
 		this.c = 0;
 		
 		this.port = port;
-		this.hostName = hostName;
-		
-		// set up socket connection
-		try{
-			serverSocket = new ServerSocket(port);
-		}
-		catch (IOException e) {
-			// TODO Auto-generated catch block
-			 System.out.println("Exception caught when trying to listen on port "
-		                + port);
-		    System.out.println(e.getMessage());
-			e.printStackTrace();
-		}
-			
 		
 	}
 
@@ -111,6 +94,7 @@ public class Node {
 			partialLog.add(newAppt);
 		}
 		
+		// appointment involves other nodes besides it's self; need to send messages
 		if (nodes.size() > 1){
 			for (Integer node:nodes){
 				if (node != this.nodeId){
@@ -128,10 +112,8 @@ public class Node {
 		
 	}
 	
-	public void receive(){
+	public void receive(Socket clientSocket){
 		try {
-			
-			clientSocket = serverSocket.accept();
 			this.out = new PrintWriter(clientSocket.getOutputStream(), true);
 			this.in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 			//this.stdIn = new BufferedReader(new InputStreamReader(System.in));
@@ -153,5 +135,6 @@ public class Node {
 		}
 		
 	}
+
 
 }

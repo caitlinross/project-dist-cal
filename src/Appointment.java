@@ -1,11 +1,8 @@
 /**
- * 
- */
-
-/**
  * @author Caitlin Ross and Erika Mackin
  *
  */
+
 import java.util.ArrayList;
 
 public class Appointment {
