@@ -15,9 +15,10 @@ public class Driver {
 		// TODO change these to command line parameters
 		int port = 4444;
 		int totalNodes = 4;
+		String[] hostNames = new String[4];
 		
 		//set up this node
-		Node node = new Node(totalNodes, port);
+		Node node = new Node(totalNodes, port, hostNames);
 		//new Thread(node).start();
 		
 		// set up this nodes serverSocket that continuously listens for other nodes

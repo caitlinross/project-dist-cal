@@ -7,8 +7,8 @@ import java.net.*;
 import java.io.*;
 
 public class Node {
-//	private int port;
-//	private String hostName;
+	private int port;
+	private String[] hostNames;
 //	private Thread thread;
 //	private ServerSocket serverSocket;
 	
@@ -28,7 +28,7 @@ public class Node {
 	/**
 	 * 
 	 */
-	public Node(int totalNodes, int port) {
+	public Node(int totalNodes, int port, String[] hostNames) {
 		// TODO Auto-generated constructor stub
 		
 		this.nodeId = Node.numNodes;
@@ -44,6 +44,8 @@ public class Node {
 		this.T = new int[totalNodes][totalNodes];
 		this.c = 0;
 		
+		this.port = port;
+		this.hostNames = hostNames;
 	}
 
 	/**
@@ -62,6 +64,7 @@ public class Node {
 	
 	// TODO: add in write to log
 	public void createAppointment(ArrayList<Integer> nodes, String name, Day day, int start, int end){
+		Appointment newAppt = null;
 		this.c++;
 		this.T[this.nodeId][this.nodeId] = c;
 
@@ -84,16 +87,16 @@ public class Node {
 					this.calendars[node][day.ordinal()][time] = 1;
 				}
 			}
-			Appointment newAppt = new Appointment(name, day, start, end, nodes);
+			newAppt = new Appointment(name, day, start, end, nodes);
 			currentAppts.add(newAppt);
 			partialLog.add(newAppt);
 		}
 		
-		// appointment involves other nodes besides it's self; need to send messages
-		if (nodes.size() > 1){
+		// appointment involves other nodes besides itself; need to send messages
+		if (nodes.size() > 1 && newAppt != null){
 			for (Integer node:nodes){
 				if (node != this.nodeId){
-					send();
+					send(newAppt, node);
 				}
 			}
 		}
@@ -103,26 +106,45 @@ public class Node {
 		
 	}
 	
-	public void send(){
+	public void deleteAppointment(){
 		
 	}
 	
+	public void hasRec(int Ti[][], int k){		
+		
+	}
+	
+	public void send(Appointment appt, int k){
+		// TODO create NP to send
+		
+		// now send NP
+		try {
+			Socket socket = new Socket(hostNames[k], port);
+			OutputStream out = socket.getOutputStream();
+			ObjectOutputStream objectOutput = new ObjectOutputStream(out);
+			objectOutput.writeObject(appt);
+			//BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			objectOutput.close();
+			out.close();
+			socket.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+        
+	}
+	
 	public void receive(Socket clientSocket){
+		Appointment appt = null;
 		try {
 			// get the Appointment object from the message
-			PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+			//PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
 			InputStream in = clientSocket.getInputStream();
 			ObjectInputStream objectInput = new ObjectInputStream(in);
-			Appointment appt = (Appointment)objectInput.readObject();
-			if (appt != null){
-				System.out.println(appt);
-			}
-			
-//			BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-//			String inputLine;
-//            while ((inputLine = in.readLine()) != null) {
-//                out.println(inputLine);
-//            }
+			appt = (Appointment)objectInput.readObject();
+			objectInput.close();
+			in.close();
 		} 
 		catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -132,6 +154,10 @@ public class Node {
 			e.printStackTrace();
 		} 
 		
+		// TODO handle the appointment
+		if (appt != null){
+			
+		}
 		
 	}
 
