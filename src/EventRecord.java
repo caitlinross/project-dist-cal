@@ -7,9 +7,13 @@ import java.io.Serializable;
 
 
 public class EventRecord implements Serializable{
+	/**
+	 * 
+	 */
 	private String operation;
 	private int time;
 	private int nodeId;
+	private Appointment appointment;
 	
 	/**
 	 * 
@@ -19,6 +23,14 @@ public class EventRecord implements Serializable{
 		this.setOperation(operation);
 		this.setTime(time);
 		this.setNodeId(nodeId);
+	}
+	
+	public EventRecord(String operation, int time, int nodeId, Appointment appointment) {
+		// TODO Auto-generated constructor stub
+		this.setOperation(operation);
+		this.setTime(time);
+		this.setNodeId(nodeId);
+		this.setAppointment(appointment);
 	}
 
 	/**
@@ -61,6 +73,20 @@ public class EventRecord implements Serializable{
 	 */
 	public void setNodeId(int nodeId) {
 		this.nodeId = nodeId;
+	}
+
+	/**
+	 * @return the appointment
+	 */
+	public Appointment getAppointment() {
+		return appointment;
+	}
+
+	/**
+	 * @param appointment the appointment to set
+	 */
+	public void setAppointment(Appointment appointment) {
+		this.appointment = appointment;
 	}
 	
 	

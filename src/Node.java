@@ -17,9 +17,9 @@ public class Node {
 	private static int numNodes = 0; 
 	
 	private String logName;
-	private Set<Appointment> partialLog;
-	private Set<Appointment> NE;
-	private Set<Appointment> NP;
+	private Set<EventRecord> PL;
+	private Set<EventRecord> NE;
+	private Set<EventRecord> NP;
 	
 	private Set<Appointment> currentAppts;
 	private int T[][];
@@ -36,9 +36,9 @@ public class Node {
 		
 		this.calendars = new int[totalNodes][7][48];
 		
-		this.partialLog = new HashSet<Appointment>();
-		this.NE = new HashSet<Appointment>();
-		this.NP = new HashSet<Appointment>();
+		this.PL = new HashSet<EventRecord>();
+		this.NE = new HashSet<EventRecord>();
+		this.NP = new HashSet<EventRecord>();
 		
 		this.currentAppts = new HashSet<Appointment>();
 		this.T = new int[totalNodes][totalNodes];
@@ -89,7 +89,7 @@ public class Node {
 			}
 			newAppt = new Appointment(name, day, start, end, nodes);
 			currentAppts.add(newAppt);
-			partialLog.add(newAppt);
+			PL.add(new EventRecord("insert", c, nodeId, newAppt));
 		}
 		
 		// appointment involves other nodes besides itself; need to send messages
@@ -101,17 +101,17 @@ public class Node {
 			}
 		}
 		
-			
-		
-		
 	}
 	
-	public void deleteAppointment(){
-		
+	public void deleteAppointment(Appointment appt){
+		this.c++;
+		this.T[this.nodeId][this.nodeId] = c;
+		PL.add(new EventRecord("delete", c, nodeId, appt));
+		// TODO delete from dictionary
 	}
 	
-	public void hasRec(int Ti[][], int k){		
-		
+	public boolean hasRec(int Ti[][], EventRecord eR, int k){		
+		return Ti[k][eR.getNodeId()] >= eR.getTime();
 	}
 	
 	public void send(Appointment appt, int k){
