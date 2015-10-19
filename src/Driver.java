@@ -18,7 +18,7 @@ public class Driver {
 		String[] hostNames = new String[4];
 		
 		//set up this node
-		Node node = new Node(totalNodes, port, hostNames);
+		final Node node = new Node(totalNodes, port, hostNames);
 		//new Thread(node).start();
 		
 		// set up this nodes serverSocket that continuously listens for other nodes
@@ -26,7 +26,7 @@ public class Driver {
         try {
         	serverSocket = new ServerSocket(port);
             while (true) {
-            	Socket client = serverSocket.accept();
+            	final Socket client = serverSocket.accept();
             	Runnable runnable = new Runnable() {
                     public synchronized void run() {
                         node.receive(client);

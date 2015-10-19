@@ -40,7 +40,7 @@ public class Node {
 		this.NE = new HashSet<EventRecord>();
 		this.NP = new HashSet<EventRecord>();
 		
-		this.currentAppts = new HashSet<Appointment>();
+		this.currentAppts = new HashSet<Appointment>();  // dictionary
 		this.T = new int[totalNodes][totalNodes];
 		this.c = 0;
 		
@@ -63,10 +63,8 @@ public class Node {
 	}
 	
 	// TODO: add in write to log
-	public void createAppointment(ArrayList<Integer> nodes, String name, Day day, int start, int end){
+	public void createNewAppointment(ArrayList<Integer> nodes, String name, Day day, int start, int end){
 		Appointment newAppt = null;
-		this.c++;
-		this.T[this.nodeId][this.nodeId] = c;
 
 		// check calendar
 		boolean timeAvail = true;
@@ -80,6 +78,7 @@ public class Node {
 			time += 30;
 		}
 		
+		// create appointment object
 		if (timeAvail){
 			time = start;
 			while(time < end){
@@ -88,8 +87,7 @@ public class Node {
 				}
 			}
 			newAppt = new Appointment(name, day, start, end, nodes);
-			currentAppts.add(newAppt);
-			PL.add(new EventRecord("insert", c, nodeId, newAppt));
+			insert(newAppt);
 		}
 		
 		// appointment involves other nodes besides itself; need to send messages
@@ -103,11 +101,18 @@ public class Node {
 		
 	}
 	
-	public void deleteAppointment(Appointment appt){
+	public void insert(Appointment appt){
+		this.c++;
+		this.T[this.nodeId][this.nodeId] = c;
+		PL.add(new EventRecord("insert", c, nodeId, appt));
+		currentAppts.add(appt);
+	}
+	
+	public void delete(Appointment appt){
 		this.c++;
 		this.T[this.nodeId][this.nodeId] = c;
 		PL.add(new EventRecord("delete", c, nodeId, appt));
-		// TODO delete from dictionary
+		currentAppts.remove(appt);
 	}
 	
 	public boolean hasRec(int Ti[][], EventRecord eR, int k){		
@@ -115,7 +120,12 @@ public class Node {
 	}
 	
 	public void send(Appointment appt, int k){
-		// TODO create NP to send
+		// create NP to send
+		for (EventRecord eR:PL){
+			if (!hasRec(this.T, eR, k)){
+				NP.add(eR);
+			}
+		}
 		
 		// now send NP
 		try {
