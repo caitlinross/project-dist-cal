@@ -28,9 +28,8 @@ public class Node {
 	/**
 	 * 
 	 */
+	// TODO need to add in node recovery from crash 
 	public Node(int totalNodes, int port, String[] hostNames) {
-		// TODO Auto-generated constructor stub
-		
 		this.nodeId = Node.numNodes;
 		Node.numNodes++;
 		
@@ -119,6 +118,7 @@ public class Node {
 		return Ti[k][eR.getNodeId()] >= eR.getTime();
 	}
 	
+	// creates NP, then sends <NP, T> to node k
 	public void send(Appointment appt, int k){
 		// create NP to send
 		for (EventRecord eR:PL){
@@ -132,8 +132,9 @@ public class Node {
 			Socket socket = new Socket(hostNames[k], port);
 			OutputStream out = socket.getOutputStream();
 			ObjectOutputStream objectOutput = new ObjectOutputStream(out);
-			objectOutput.writeObject(appt);
-			//BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			objectOutput.writeObject(NP);
+			objectOutput.writeObject(T);
+			objectOutput.writeObject(nodeId);
 			objectOutput.close();
 			out.close();
 			socket.close();
@@ -145,14 +146,19 @@ public class Node {
         
 	}
 	
+	// receives <NP, T> from node k
 	public void receive(Socket clientSocket){
-		Appointment appt = null;
+		Set<EventRecord> NPk = null;
+		int Tk[][] = null;
+		int k = -1;
+
 		try {
-			// get the Appointment object from the message
-			//PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+			// get the objects from the message
 			InputStream in = clientSocket.getInputStream();
 			ObjectInputStream objectInput = new ObjectInputStream(in);
-			appt = (Appointment)objectInput.readObject();
+			NPk = (HashSet<EventRecord>)objectInput.readObject();
+			Tk = (int[][])objectInput.readObject();
+			k = objectInput.readInt();
 			objectInput.close();
 			in.close();
 		} 
@@ -164,8 +170,54 @@ public class Node {
 			e.printStackTrace();
 		} 
 		
-		// TODO handle the appointment
-		if (appt != null){
+		// handle the appointment
+		if (NPk != null){
+			// update NE
+			for (EventRecord fR:NPk){
+				if (!hasRec(T, fR, nodeId)){
+					NE.add(fR);
+				}
+			}
+			
+			// update the dictionary and calendar
+			for (EventRecord dR:NE){
+				if (dR.getOperation().equals("insert")){
+					currentAppts.add(dR.getAppointment());
+					
+				}
+			}
+			for (EventRecord dR:NE){
+				if (dR.getOperation().equals("delete") && currentAppts.contains(dR.getAppointment())){
+					currentAppts.remove(dR.getAppointment());
+				
+				}
+			}
+			
+			// update T
+			for (int i = 0; i < numNodes; i++){
+				T[nodeId][i] = Math.max(T[nodeId][i], Tk[k][i]);
+			}
+			for (int i = 0; i < numNodes; i++){
+				for (int j = 0; j < numNodes; j++){
+					T[i][j] = Math.max(T[i][j], Tk[i][j]);
+				}
+			}
+			
+			// update PL
+			for (EventRecord eR:PL){
+				for (int j = 0; j < numNodes; j++){
+					if (hasRec(T, eR, j)){
+						PL.remove(eR);
+					}
+				}
+			}
+			for (EventRecord eR:NE){
+				for (int j = 0; j < numNodes; j++){
+					if (!hasRec(T, eR, j)){
+						PL.add(eR);
+					}
+				}
+			}
 			
 		}
 		
