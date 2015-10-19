@@ -1,11 +1,13 @@
 /**
  * @author Caitlin Ross and Erika Mackin
  *
+ * Object that stores information about an event
  */
 
 import java.io.Serializable;
 
 
+@SuppressWarnings("serial")
 public class EventRecord implements Serializable{
 	/**
 	 * 
@@ -19,14 +21,12 @@ public class EventRecord implements Serializable{
 	 * 
 	 */
 	public EventRecord(String operation, int time, int nodeId) {
-		// TODO Auto-generated constructor stub
 		this.setOperation(operation);
 		this.setTime(time);
 		this.setNodeId(nodeId);
 	}
 	
 	public EventRecord(String operation, int time, int nodeId, Appointment appointment) {
-		// TODO Auto-generated constructor stub
 		this.setOperation(operation);
 		this.setTime(time);
 		this.setNodeId(nodeId);

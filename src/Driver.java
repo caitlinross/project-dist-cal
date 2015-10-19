@@ -1,6 +1,7 @@
 /**
  * @author Caitlin Ross and Erika Mackin
  *
+ * Driver to set up a node
  */
 
 import java.io.*;
@@ -38,7 +39,6 @@ public class Driver {
             }
         } 
         catch (IOException e) {
-			// TODO Auto-generated catch block
 			 System.out.println("Exception caught when trying to listen on port " + port);
 		    System.out.println(e.getMessage());
 			e.printStackTrace();

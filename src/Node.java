@@ -1,6 +1,7 @@
 /**
  * @author Caitlin Ross and Erika Mackin
  *
+ * Node object
  */
 import java.util.*;
 import java.net.*;
@@ -61,7 +62,6 @@ public class Node {
 		return calendars;
 	}
 	
-	// TODO: add in write to log
 	public void createNewAppointment(ArrayList<Integer> nodes, String name, Day day, int start, int end){
 		Appointment newAppt = null;
 
@@ -102,6 +102,7 @@ public class Node {
 		
 	}
 	
+	// write an event to the log
 	public void writeToLog(EventRecord eR){
 		try{
 			FileWriter fw = new FileWriter(this.logName, true);
@@ -132,6 +133,7 @@ public class Node {
 		}
 	}
 	
+	// insert appointment into dictionary
 	public void insert(Appointment appt){
 		this.c++;
 		this.T[this.nodeId][this.nodeId] = c;
@@ -141,6 +143,7 @@ public class Node {
 		currentAppts.add(appt);
 	}
 	
+	// delete appointment from dictionary
 	public void delete(Appointment appt){
 		this.c++;
 		this.T[this.nodeId][this.nodeId] = c;
@@ -150,6 +153,7 @@ public class Node {
 		currentAppts.remove(appt);
 	}
 	
+	// checks if we know if node k has learned about event e
 	public boolean hasRec(int Ti[][], EventRecord eR, int k){		
 		return Ti[k][eR.getNodeId()] >= eR.getTime();
 	}
@@ -175,7 +179,6 @@ public class Node {
 			out.close();
 			socket.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
         
@@ -199,10 +202,8 @@ public class Node {
 			in.close();
 		} 
 		catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
 		

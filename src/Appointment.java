@@ -1,11 +1,13 @@
 /**
  * @author Caitlin Ross and Erika Mackin
  *
+ * Object that contains all info for an appointment
  */
 
 import java.io.Serializable;
 import java.util.ArrayList;
 
+@SuppressWarnings("serial")
 public class Appointment implements Serializable {
 	// all fields are serializable
 	private String name;
@@ -15,7 +17,6 @@ public class Appointment implements Serializable {
 	private ArrayList<Integer> participants;
 	
 	public Appointment(String name, Day day, int start, int end, ArrayList<Integer> participants) {
-		// TODO Auto-generated constructor stub
 		this.name = name;
 		this.day = day;
 		this.start = start;
