@@ -9,8 +9,6 @@ import java.io.*;
 public class Node {
 	private int port;
 	private String[] hostNames;
-//	private Thread thread;
-//	private ServerSocket serverSocket;
 	
 	private int nodeId;
 	private int calendars[][][];
@@ -45,6 +43,8 @@ public class Node {
 		
 		this.port = port;
 		this.hostNames = hostNames;
+		
+		this.logName = "appointments.log";
 	}
 
 	/**
@@ -98,19 +98,55 @@ public class Node {
 			}
 		}
 		
+		// TODO handle appointment conflict
+		
+	}
+	
+	public void writeToLog(EventRecord eR){
+		try{
+			FileWriter fw = new FileWriter(this.logName, true);
+			BufferedWriter bw = new BufferedWriter(fw);
+			bw.write("------- new event record -------\n");
+			bw.write("Operation: " + eR.getOperation() + "\n");
+			bw.write("Node clock: " + eR.getTime() + "\n");
+			bw.write("Node Id: " + eR.getNodeId() + "\n");
+			bw.write("Appointment to be ");
+			if (eR.getOperation().equals("delete"))
+				bw.write("deleted from ");
+			else
+				bw.write("added to ");
+			bw.write("dictionary\n");
+			bw.write("Appointment name: " + eR.getAppointment().getName() + "\n");
+			bw.write("Day: " + eR.getAppointment().getDay() + "\n");
+			bw.write("Start time: " + eR.getAppointment().getStart() + "\n");
+			bw.write("End time: " + eR.getAppointment().getEnd() + "\n");
+			bw.write("Participants: ");
+			for (Integer node:eR.getAppointment().getParticipants()){
+				bw.write(node + " ");
+			}
+			bw.write("\n");
+			bw.close();
+		}
+		catch (IOException e){
+			e.printStackTrace();
+		}
 	}
 	
 	public void insert(Appointment appt){
 		this.c++;
 		this.T[this.nodeId][this.nodeId] = c;
-		PL.add(new EventRecord("insert", c, nodeId, appt));
+		EventRecord eR = new EventRecord("insert", c, nodeId, appt);
+		writeToLog(eR);
+		PL.add(eR);
 		currentAppts.add(appt);
 	}
 	
 	public void delete(Appointment appt){
 		this.c++;
 		this.T[this.nodeId][this.nodeId] = c;
-		PL.add(new EventRecord("delete", c, nodeId, appt));
+		EventRecord eR = new EventRecord("delete", c, nodeId, appt);
+		writeToLog(eR);
+		PL.add(eR);
 		currentAppts.remove(appt);
 	}
 	

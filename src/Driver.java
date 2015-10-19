@@ -3,7 +3,7 @@
  *
  */
 
-import java.io.IOException;
+import java.io.*;
 import java.net.*;
 
 public class Driver {
@@ -21,6 +21,7 @@ public class Driver {
 		final Node node = new Node(totalNodes, port, hostNames);
 		//new Thread(node).start();
 		
+		// TODO have a thread running for the serverSocket to listen for other nodes
 		// set up this nodes serverSocket that continuously listens for other nodes
 		ServerSocket serverSocket;
         try {
@@ -43,6 +44,7 @@ public class Driver {
 			e.printStackTrace();
 		}
         
+        // TODO get user command line input for creating appointments
 
 	}
 	
