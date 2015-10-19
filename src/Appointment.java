@@ -16,12 +16,18 @@ public class Appointment implements Serializable {
 	private int end;
 	private ArrayList<Integer> participants;
 	
+	// use these indices in the calendar arrays
+	private int startIndex;
+	private int endIndex;
+	
 	public Appointment(String name, Day day, int start, int end, ArrayList<Integer> participants) {
 		this.name = name;
 		this.day = day;
 		this.start = start;
 		this.end = end;
 		this.participants = participants;
+		this.startIndex = convertTime(start);
+		this.endIndex = convertTime(end);
 	}
 	
 	public String getName() {
@@ -64,6 +70,10 @@ public class Appointment implements Serializable {
 		this.participants = participants;
 	}
 	
-	
+	public int convertTime(int time){
+		int index = 0;
+		// TODO convert time to appropriate array index
+		return index;
+	}
 	
 }
