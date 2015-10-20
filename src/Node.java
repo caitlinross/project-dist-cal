@@ -28,9 +28,9 @@ public class Node {
 	 * 
 	 */
 	// TODO need to add in node recovery from crash 
-	public Node(int totalNodes, int port, String[] hostNames) {
-		this.nodeId = Node.numNodes;
-		Node.numNodes++;
+	public Node(int totalNodes, int port, String[] hostNames, int nodeID) {
+		this.nodeId = nodeID;
+		this.numNodes = totalNodes;
 		
 		this.calendars = new int[totalNodes][7][48];
 		
@@ -64,11 +64,13 @@ public class Node {
 	
 	public void createNewAppointment(ArrayList<Integer> nodes, String name, Day day, int start, int end, String sAMPM, String eAMPM){
 		Appointment newAppt = null;
-
+		int startIndex = Appointment.convertTime(start, sAMPM);
+		int endIndex = Appointment.convertTime(end, eAMPM);
+		
 		// check calendar
 		boolean timeAvail = true;
-		int time = start;
-		while(timeAvail && time < end){
+		int time = startIndex;
+		while(timeAvail && time < endIndex){
 			for (Integer node:nodes){
 				if (this.calendars[node][day.ordinal()][time] != 0){
 					timeAvail = false;
@@ -79,8 +81,8 @@ public class Node {
 		
 		// create appointment object
 		if (timeAvail){
-			time = start;
-			while(time < end){
+			time = startIndex;
+			while(time < endIndex){
 				for(Integer node:nodes){
 					this.calendars[node][day.ordinal()][time] = 1;
 				}
