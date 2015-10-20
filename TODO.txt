@@ -1,0 +1,18 @@
+What has been done so far:
+
+The full Wuu and Bernstein algorithm has been implemented, but not fully tested.
+Sockets set up and message passing has been tested between 2 computers.
+socket connections are using threads, synchronization has just been added, but not tested.
+Writing to log has been implemented.
+Very simple UI set up for creating appointments
+
+
+What still needs to be done:
+- recovering from crash failure
+    - will need to save calendar info to disk to support this
+- appointment conflict resolution
+- add in appointment cancellation (in UI)
+- add in view appointments feature to UI
+- test on AWS
+- write report of design and implementation
+

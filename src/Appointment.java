@@ -27,11 +27,11 @@ public class Appointment implements Serializable {
 		this.day = day;
 		this.start = start;
 		this.end = end;
-		this.sAMPM = sAMPM;
-		this.eAMPM = eAMPM;
+		this.setsAMPM(sAMPM);
+		this.seteAMPM(eAMPM);
 		this.participants = participants;
-		this.startIndex = convertTime(start, sAMPM);
-		this.endIndex = convertTime(end, eAMPM);
+		this.setStartIndex(convertTime(start, sAMPM));
+		this.setEndIndex(convertTime(end, eAMPM));
 	}
 	
 	public String getName() {
@@ -74,9 +74,64 @@ public class Appointment implements Serializable {
 		this.participants = participants;
 	}
 	
+	/**
+	 * @return the startIndex
+	 */
+	public int getStartIndex() {
+		return startIndex;
+	}
+
+	/**
+	 * @param startIndex the startIndex to set
+	 */
+	public void setStartIndex(int startIndex) {
+		this.startIndex = startIndex;
+	}
+
+	/**
+	 * @return the endIndex
+	 */
+	public int getEndIndex() {
+		return endIndex;
+	}
+
+	/**
+	 * @param endIndex the endIndex to set
+	 */
+	public void setEndIndex(int endIndex) {
+		this.endIndex = endIndex;
+	}
+
+	/**
+	 * @return the sAMPM
+	 */
+	public String getsAMPM() {
+		return sAMPM;
+	}
+
+	/**
+	 * @param sAMPM the sAMPM to set
+	 */
+	public void setsAMPM(String sAMPM) {
+		this.sAMPM = sAMPM;
+	}
+
+	/**
+	 * @return the eAMPM
+	 */
+	public String geteAMPM() {
+		return eAMPM;
+	}
+
+	/**
+	 * @param eAMPM the eAMPM to set
+	 */
+	public void seteAMPM(String eAMPM) {
+		this.eAMPM = eAMPM;
+	}
+
 	public static int convertTime(int time, String amPM){
 		int index = 0;
-		// TODO convert time to appropriate array index
 		if (time == 1200){
 			if (amPM.equals("AM"))
 				index = 0;
