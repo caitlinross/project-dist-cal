@@ -16,8 +16,11 @@ public class Driver {
 	public static void main(String[] args) {
 		// TODO change these to command line parameters
 		final int port = 4446;
-		int totalNodes = 4;
-		String[] hostNames = new String[4];
+		int totalNodes = 2;  // TODO change later
+		String[] hostNames = new String[totalNodes];
+		for (int i = 0; i < hostNames.length; i++)
+			hostNames[i] = args[i];
+		
 		InetAddress inetAddr;
 		String hostname = "";
 		
