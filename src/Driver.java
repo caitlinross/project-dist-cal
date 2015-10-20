@@ -76,28 +76,31 @@ public class Driver {
 			String tmpDay = in.nextLine();
 			if (tmpDay.equals("Sunday"))
 				day = Day.SUNDAY;
-			else if (in.nextLine().equals("Monday"))
+			else if (tmpDay.equals("Monday"))
 				day = Day.MONDAY;
-			else if (in.nextLine().equals("Tuesday"))
+			else if (tmpDay.equals("Tuesday"))
 				day = Day.TUESDAY;
-			else if (in.nextLine().equals("Wednesday"))
+			else if (tmpDay.equals("Wednesday"))
 				day = Day.WEDNESDAY;
-			else if (in.nextLine().equals("Thursday"))
+			else if (tmpDay.equals("Thursday"))
 				day = Day.THURSDAY;
-			else if (in.nextLine().equals("Friday"))
+			else if (tmpDay.equals("Friday"))
 				day = Day.FRIDAY;
 			else
 				day = Day.SATURDAY;
 			System.out.println("Please enter a start time in HHMM format in 30 minute increments\n");
 			start = in.nextInt();
-			System.out.println("AM or PM");
+			in.nextLine();
+			System.out.println("AM or PM\n");
 			sAMPM = in.nextLine();
 			System.out.println(Appointment.convertTime(start, sAMPM));
 			
 			System.out.println("Please enter an end time in HHMM format in 30 minute increments\n");
 			end = in.nextInt();
-			System.out.println("AM or PM");
+			in.nextLine();
+			System.out.println("AM or PM\n");
 			eAMPM = in.nextLine();
+			System.out.println(Appointment.convertTime(end, eAMPM));
 			System.out.println("Please enter each participant; enter -1 when done\n");
 			int tmp = in.nextInt();
 			while (tmp != -1){
@@ -106,7 +109,7 @@ public class Driver {
 				tmp = in.nextInt();
 			}
 			
-			//node.createNewAppointment(participants, name, day, start, end, sAMPM, eAMPM);
+			node.createNewAppointment(participants, name, day, start, end, sAMPM, eAMPM);
 		}
 	}
 	

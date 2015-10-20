@@ -91,7 +91,7 @@ public class Appointment implements Serializable {
 		}
 		else {
 			index = time/100*2;
-			if (time % 60 == 30)
+			if ((time % 100) % 60 == 30)
 				index++;
 			if (amPM.equals("PM"))
 				index += 24;
