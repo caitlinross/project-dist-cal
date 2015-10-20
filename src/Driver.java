@@ -26,7 +26,7 @@ public class Driver {
 			String text = null;
 			int lineNo = 0;
 		    while ((text = reader.readLine()) != null) {
-		        hostNames[lineNo] = text;
+		        hostNames[lineNo] = text.trim();
 		        lineNo++;
 		    }
 		    reader.close();
@@ -37,10 +37,7 @@ public class Driver {
 		}
 	    
 		final int port = 4446;
-		
-		
-		for (int i = 0; i < hostNames.length; i++)
-			hostNames[i] = args[i];
+
 		
 		InetAddress inetAddr;
 		String hostname = "";

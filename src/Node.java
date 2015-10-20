@@ -76,7 +76,7 @@ public class Node {
 					timeAvail = false;
 				}
 			}
-			time += 30;
+			time++;
 		}
 		
 		// create appointment object
@@ -86,6 +86,7 @@ public class Node {
 				for(Integer node:nodes){
 					this.calendars[node][day.ordinal()][time] = 1;
 				}
+				time++;
 			}
 			newAppt = new Appointment(name, day, start, end, eAMPM, sAMPM, nodes);
 			insert(newAppt);
@@ -95,6 +96,7 @@ public class Node {
 		if (nodes.size() > 1 && newAppt != null){
 			for (Integer node:nodes){
 				if (node != this.nodeId){
+					System.out.println("Send to node " + node);
 					send(newAppt, node);
 				}
 			}
