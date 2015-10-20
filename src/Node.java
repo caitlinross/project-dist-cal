@@ -62,7 +62,7 @@ public class Node {
 		return calendars;
 	}
 	
-	public void createNewAppointment(ArrayList<Integer> nodes, String name, Day day, int start, int end){
+	public void createNewAppointment(ArrayList<Integer> nodes, String name, Day day, int start, int end, String sAMPM, String eAMPM){
 		Appointment newAppt = null;
 
 		// check calendar
@@ -85,7 +85,7 @@ public class Node {
 					this.calendars[node][day.ordinal()][time] = 1;
 				}
 			}
-			newAppt = new Appointment(name, day, start, end, nodes);
+			newAppt = new Appointment(name, day, start, end, eAMPM, sAMPM, nodes);
 			insert(newAppt);
 		}
 		

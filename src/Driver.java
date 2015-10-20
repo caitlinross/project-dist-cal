@@ -15,7 +15,7 @@ public class Driver {
 	 */
 	public static void main(String[] args) {
 		// TODO change these to command line parameters
-		int port = 4445;
+		final int port = 4446;
 		int totalNodes = 4;
 		String[] hostNames = new String[4];
 		InetAddress inetAddr;
@@ -61,10 +61,13 @@ public class Driver {
         
         // TODO add sanity checks on input or otherwise improve it
 		while(true){
+			@SuppressWarnings("resource")
 			Scanner in = new Scanner(System.in);
 			String name;
 			int start;
 			int end;
+			String sAMPM;
+			String eAMPM;
 			Day day;
 			ArrayList<Integer> participants = new ArrayList<Integer>();
 			System.out.println("Please enter an appointment name\n");
@@ -85,10 +88,16 @@ public class Driver {
 				day = Day.FRIDAY;
 			else
 				day = Day.SATURDAY;
-			System.out.println("Please enter a start time in 30 minute increments\n");
+			System.out.println("Please enter a start time in HHMM format in 30 minute increments\n");
 			start = in.nextInt();
-			System.out.println("Please enter an end time in 30 minute increments\n");
+			System.out.println("AM or PM");
+			sAMPM = in.nextLine();
+			System.out.println(Appointment.convertTime(start, sAMPM));
+			
+			System.out.println("Please enter an end time in HHMM format in 30 minute increments\n");
 			end = in.nextInt();
+			System.out.println("AM or PM");
+			eAMPM = in.nextLine();
 			System.out.println("Please enter each participant; enter -1 when done\n");
 			int tmp = in.nextInt();
 			while (tmp != -1){
@@ -97,7 +106,7 @@ public class Driver {
 				tmp = in.nextInt();
 			}
 			
-			node.createNewAppointment(participants, name, day, start, end);
+			//node.createNewAppointment(participants, name, day, start, end, sAMPM, eAMPM);
 		}
 	}
 	

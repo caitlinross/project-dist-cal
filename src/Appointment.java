@@ -14,20 +14,24 @@ public class Appointment implements Serializable {
 	private Day day;
 	private int start;
 	private int end;
+	private String sAMPM;
+	private String eAMPM;
 	private ArrayList<Integer> participants;
 	
 	// use these indices in the calendar arrays
 	private int startIndex;
 	private int endIndex;
 	
-	public Appointment(String name, Day day, int start, int end, ArrayList<Integer> participants) {
+	public Appointment(String name, Day day, int start, int end, String sAMPM, String eAMPM, ArrayList<Integer> participants) {
 		this.name = name;
 		this.day = day;
 		this.start = start;
 		this.end = end;
+		this.sAMPM = sAMPM;
+		this.eAMPM = eAMPM;
 		this.participants = participants;
-		this.startIndex = convertTime(start);
-		this.endIndex = convertTime(end);
+		this.startIndex = convertTime(start, sAMPM);
+		this.endIndex = convertTime(end, eAMPM);
 	}
 	
 	public String getName() {
@@ -70,9 +74,28 @@ public class Appointment implements Serializable {
 		this.participants = participants;
 	}
 	
-	public int convertTime(int time){
+	public static int convertTime(int time, String amPM){
 		int index = 0;
 		// TODO convert time to appropriate array index
+		if (time == 1200){
+			if (amPM.equals("AM"))
+				index = 0;
+			else
+				index = 24;
+		}
+		else if (time == 1230){
+			if (amPM.equals("AM"))
+				index = 1;
+			else
+				index = 25;
+		}
+		else {
+			index = time/100*2;
+			if (time % 60 == 30)
+				index++;
+			if (amPM.equals("PM"))
+				index += 24;
+		}
 		return index;
 	}
 	
