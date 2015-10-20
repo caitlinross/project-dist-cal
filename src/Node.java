@@ -232,17 +232,16 @@ public class Node {
 					}
 				}
 				
-				// update the dictionary and calendar
+				// update the dictionary and calendar and log
+				// TODO update calendar and write new events received to log
 				for (EventRecord dR:NE){
 					if (dR.getOperation().equals("insert")){
 						currentAppts.add(dR.getAppointment());
-						
 					}
 				}
 				for (EventRecord dR:NE){
 					if (dR.getOperation().equals("delete") && currentAppts.contains(dR.getAppointment())){
 						currentAppts.remove(dR.getAppointment());
-					
 					}
 				}
 				

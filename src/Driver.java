@@ -114,14 +114,11 @@ public class Driver {
 			in.nextLine();
 			System.out.println("AM or PM\n");
 			sAMPM = in.nextLine();
-			System.out.println(Appointment.convertTime(start, sAMPM));
-			
 			System.out.println("Please enter an end time in HHMM format in 30 minute increments\n");
 			end = in.nextInt();
 			in.nextLine();
 			System.out.println("AM or PM\n");
 			eAMPM = in.nextLine();
-			System.out.println(Appointment.convertTime(end, eAMPM));
 			System.out.println("Please enter each participant; enter -1 when done\n");
 			int tmp = in.nextInt();
 			while (tmp != -1){
