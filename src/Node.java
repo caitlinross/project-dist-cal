@@ -11,7 +11,7 @@ public class Node {
 	private int port;
 	private String[] hostNames;
 	private int nodeId;
-	private int numNodes = 0; 
+	private int numNodes; 
 	private String logName;
 	
 	// variables that need to be concerned with synchronization
@@ -140,6 +140,97 @@ public class Node {
 		}
 	}
 	
+	// save state of system for recovering from crash
+	public void saveNodeState(){
+		try{
+			FileWriter fw = new FileWriter("nodestate.txt", false);  // overwrite each time
+			BufferedWriter bw = new BufferedWriter(fw);
+			
+			// line 1: nodeid, numnodes, port, hostnames, c
+			bw.write(this.nodeId + "," + this.numNodes + "," + this.port + ",");
+			for (int i = 0; i < hostNames.length; i++){
+				bw.write(hostNames[i] + ",");
+			}
+			bw.write(this.c + "\n");
+			
+			// then save the 2D calendar array for each node
+			for (int i = 0; i < this.calendars.length; i++){
+				for (int j = 0; j < this.calendars[i].length; j++){
+					for (int k = 0; k < this.calendars[i][j].length; k++){
+						bw.write(this.calendars[i][j][k]);
+						if (k != this.calendars[i][j].length - 1)
+							bw.write(",");
+					}
+					bw.write("\n");
+				}
+			}
+			
+			// save T
+			for (int i = 0; i < this.T.length; i++){
+				for (int j = 0; j < this.T[i].length; j++){
+					bw.write(this.T[i][j]);
+					if (j != this.T[i].length - 1){
+						bw.write(",");
+					}
+				}
+				bw.write("\n");
+			}
+			
+			// save events in NP, PL, NE, currentAppts in following format:
+			// operation, time, nodeID, appt name, day, start, end, sAMPM, eAMPM, participants
+			// for days, use ordinals of enums, for AM/PM: AM = 0, PM = 1
+			bw.write("NP," + NP.size() + "\n");
+			for (EventRecord eR:NP){
+				bw.write(eR.getOperation() + "," + eR.getTime() + "," + eR.getNodeId() + "," + eR.getAppointment().getName() + "," + eR.getAppointment().getDay() + ","
+						+ eR.getAppointment().getStart() + "," + eR.getAppointment().getEnd() + "," + eR.getAppointment().getsAMPM() + "," + eR.getAppointment().geteAMPM());
+				for (int i = 0; i < eR.getAppointment().getParticipants().size(); i++){
+					bw.write(eR.getAppointment().getParticipants().get(i));
+					if (i != eR.getAppointment().getParticipants().size() - 1)
+						bw.write(",");
+				}
+				bw.write("\n");
+			}
+			
+			bw.write("PL," + PL.size() + "\n");
+			for (EventRecord eR:PL){
+				bw.write(eR.getOperation() + "," + eR.getTime() + "," + eR.getNodeId() + "," + eR.getAppointment().getName() + "," + eR.getAppointment().getDay() + ","
+						+ eR.getAppointment().getStart() + "," + eR.getAppointment().getEnd() + "," + eR.getAppointment().getsAMPM() + "," + eR.getAppointment().geteAMPM());
+				for (int i = 0; i < eR.getAppointment().getParticipants().size(); i++){
+					bw.write(eR.getAppointment().getParticipants().get(i));
+					if (i != eR.getAppointment().getParticipants().size() - 1)
+						bw.write(",");
+				}
+				bw.write("\n");
+			}
+			
+			bw.write("NE," + NE.size() + "\n");
+			for (EventRecord eR:NE){
+				bw.write(eR.getOperation() + "," + eR.getTime() + "," + eR.getNodeId() + "," + eR.getAppointment().getName() + "," + eR.getAppointment().getDay() + ","
+						+ eR.getAppointment().getStart() + "," + eR.getAppointment().getEnd() + "," + eR.getAppointment().getsAMPM() + "," + eR.getAppointment().geteAMPM());
+				for (int i = 0; i < eR.getAppointment().getParticipants().size(); i++){
+					bw.write(eR.getAppointment().getParticipants().get(i));
+					if (i != eR.getAppointment().getParticipants().size() - 1)
+						bw.write(",");
+				}
+				bw.write("\n");
+			}
+			
+			bw.write("current," + currentAppts.size() + "\n");
+			for (Appointment appt:currentAppts){
+				bw.write(appt.getName() + "," + appt.getDay() + "," + appt.getStart() + "," + appt.getEnd() + "," + appt.getsAMPM() + "," + appt.geteAMPM());
+				for (int i = 0; i < appt.getParticipants().size(); i++){
+					bw.write(appt.getParticipants().get(i));
+					if (i != appt.getParticipants().size() - 1)
+						bw.write(",");
+				}
+				bw.write("\n");
+			}
+		}
+		catch (IOException e){
+			e.printStackTrace();
+		}
+	}
+	
 	// insert appointment into dictionary
 	public void insert(Appointment appt){
 		this.c++;
@@ -149,6 +240,7 @@ public class Node {
 		synchronized(lock){
 			PL.add(eR);
 			currentAppts.add(appt);
+			saveNodeState();
 		}
 	}
 	
@@ -161,6 +253,7 @@ public class Node {
 		synchronized(lock){
 			PL.add(eR);
 			currentAppts.remove(appt);
+			saveNodeState();
 		}
 	}
 	
@@ -178,6 +271,7 @@ public class Node {
 					NP.add(eR);
 				}
 			}
+			saveNodeState();
 		}
 		
 		// now send NP
@@ -272,7 +366,7 @@ public class Node {
 					}
 				}
 				
-				
+				// updates to PL
 				for (EventRecord eR:PL){
 					for (int j = 0; j < numNodes; j++){
 						if (hasRec(T, eR, j)){
@@ -287,6 +381,8 @@ public class Node {
 						}
 					}
 				}
+				
+				saveNodeState();
 			}
 		}
 		
