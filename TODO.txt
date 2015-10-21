@@ -8,10 +8,12 @@ Very simple UI set up for creating appointments
 
 
 What still needs to be done:
-- although W&B implemented, some details relevant specifically to calendar not implemented yet
-- recovering from crash failure
+- although W&B implemented, some details relevant specifically to calendar not implemented yet (Erika)
+- recovering from crash failure (Caitlin)
     - will need to save calendar info to disk to support this
 - appointment conflict resolution
+- need to keep track of when processes are up/down
+- keep queue of messages that have tried to send when process is down
 - add in appointment cancellation (in UI)
 - add in view appointments feature to UI
 - test on AWS
