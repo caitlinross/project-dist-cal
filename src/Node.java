@@ -234,14 +234,31 @@ public class Node {
 				
 				// update the dictionary and calendar and log
 				// TODO update calendar and write new events received to log
+				//TODONE: update claendar, but aren't we updating PL in the insert() and delete() functions?
 				for (EventRecord dR:NE){
 					if (dR.getOperation().equals("insert")){
 						currentAppts.add(dR.getAppointment());
+						//update calendar time slot to 1 for each node in appt list, for each time slot 
+						//between start and end indices, for the given day
+						//TODO: do we want to include a warning if this time space, for some
+						//bizarro reason is already 1/?
+						for (Integer id:dR.getAppointment().getParticipants()) {
+							for (int j = dR.getAppointment().getStartIndex(); j < dR.getAppointment().getEndIndex(); j++) {
+								this.calendars[id][dR.getAppointment().getDay().ordinal()][j] = 1;
+							}
+						}
+				
 					}
 				}
 				for (EventRecord dR:NE){
 					if (dR.getOperation().equals("delete") && currentAppts.contains(dR.getAppointment())){
 						currentAppts.remove(dR.getAppointment());
+						//update calendar
+						for (Integer id:dR.getAppointment().getParticipants()) {
+							for (int j = dR.getAppointment().getStartIndex(); j < dR.getAppointment().getEndIndex(); j++) {
+								this.calendars[id][dR.getAppointment().getDay().ordinal()][j] = 0;
+							}
+						}
 					}
 				}
 				
@@ -255,7 +272,7 @@ public class Node {
 					}
 				}
 				
-				// update PL
+				
 				for (EventRecord eR:PL){
 					for (int j = 0; j < numNodes; j++){
 						if (hasRec(T, eR, j)){
