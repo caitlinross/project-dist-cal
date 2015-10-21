@@ -157,7 +157,7 @@ public class Node {
 			for (int i = 0; i < this.calendars.length; i++){
 				for (int j = 0; j < this.calendars[i].length; j++){
 					for (int k = 0; k < this.calendars[i][j].length; k++){
-						bw.write(this.calendars[i][j][k]);
+						bw.write(Integer.toString(this.calendars[i][j][k]));
 						if (k != this.calendars[i][j].length - 1)
 							bw.write(",");
 					}
@@ -168,7 +168,7 @@ public class Node {
 			// save T
 			for (int i = 0; i < this.T.length; i++){
 				for (int j = 0; j < this.T[i].length; j++){
-					bw.write(this.T[i][j]);
+					bw.write(Integer.toString(this.T[i][j]));
 					if (j != this.T[i].length - 1){
 						bw.write(",");
 					}
@@ -178,13 +178,13 @@ public class Node {
 			
 			// save events in NP, PL, NE, currentAppts in following format:
 			// operation, time, nodeID, appt name, day, start, end, sAMPM, eAMPM, participants
-			// for days, use ordinals of enums, for AM/PM: AM = 0, PM = 1
+			// for days, use ordinals of enums,
 			bw.write("NP," + NP.size() + "\n");
 			for (EventRecord eR:NP){
 				bw.write(eR.getOperation() + "," + eR.getTime() + "," + eR.getNodeId() + "," + eR.getAppointment().getName() + "," + eR.getAppointment().getDay() + ","
-						+ eR.getAppointment().getStart() + "," + eR.getAppointment().getEnd() + "," + eR.getAppointment().getsAMPM() + "," + eR.getAppointment().geteAMPM());
+						+ eR.getAppointment().getStart() + "," + eR.getAppointment().getEnd() + "," + eR.getAppointment().getsAMPM() + "," + eR.getAppointment().geteAMPM() + ",");
 				for (int i = 0; i < eR.getAppointment().getParticipants().size(); i++){
-					bw.write(eR.getAppointment().getParticipants().get(i));
+					bw.write(Integer.toString(eR.getAppointment().getParticipants().get(i)));
 					if (i != eR.getAppointment().getParticipants().size() - 1)
 						bw.write(",");
 				}
@@ -194,9 +194,9 @@ public class Node {
 			bw.write("PL," + PL.size() + "\n");
 			for (EventRecord eR:PL){
 				bw.write(eR.getOperation() + "," + eR.getTime() + "," + eR.getNodeId() + "," + eR.getAppointment().getName() + "," + eR.getAppointment().getDay() + ","
-						+ eR.getAppointment().getStart() + "," + eR.getAppointment().getEnd() + "," + eR.getAppointment().getsAMPM() + "," + eR.getAppointment().geteAMPM());
+						+ eR.getAppointment().getStart() + "," + eR.getAppointment().getEnd() + "," + eR.getAppointment().getsAMPM() + "," + eR.getAppointment().geteAMPM() + ",");
 				for (int i = 0; i < eR.getAppointment().getParticipants().size(); i++){
-					bw.write(eR.getAppointment().getParticipants().get(i));
+					bw.write(Integer.toString(eR.getAppointment().getParticipants().get(i)));
 					if (i != eR.getAppointment().getParticipants().size() - 1)
 						bw.write(",");
 				}
@@ -206,9 +206,9 @@ public class Node {
 			bw.write("NE," + NE.size() + "\n");
 			for (EventRecord eR:NE){
 				bw.write(eR.getOperation() + "," + eR.getTime() + "," + eR.getNodeId() + "," + eR.getAppointment().getName() + "," + eR.getAppointment().getDay() + ","
-						+ eR.getAppointment().getStart() + "," + eR.getAppointment().getEnd() + "," + eR.getAppointment().getsAMPM() + "," + eR.getAppointment().geteAMPM());
+						+ eR.getAppointment().getStart() + "," + eR.getAppointment().getEnd() + "," + eR.getAppointment().getsAMPM() + "," + eR.getAppointment().geteAMPM() + ",");
 				for (int i = 0; i < eR.getAppointment().getParticipants().size(); i++){
-					bw.write(eR.getAppointment().getParticipants().get(i));
+					bw.write(Integer.toString(eR.getAppointment().getParticipants().get(i)));
 					if (i != eR.getAppointment().getParticipants().size() - 1)
 						bw.write(",");
 				}
@@ -217,14 +217,15 @@ public class Node {
 			
 			bw.write("current," + currentAppts.size() + "\n");
 			for (Appointment appt:currentAppts){
-				bw.write(appt.getName() + "," + appt.getDay() + "," + appt.getStart() + "," + appt.getEnd() + "," + appt.getsAMPM() + "," + appt.geteAMPM());
+				bw.write(appt.getName() + "," + appt.getDay() + "," + appt.getStart() + "," + appt.getEnd() + "," + appt.getsAMPM() + "," + appt.geteAMPM() + ",");
 				for (int i = 0; i < appt.getParticipants().size(); i++){
-					bw.write(appt.getParticipants().get(i));
+					bw.write(Integer.toString(appt.getParticipants().get(i)));
 					if (i != appt.getParticipants().size() - 1)
 						bw.write(",");
 				}
 				bw.write("\n");
 			}
+			bw.close();
 		}
 		catch (IOException e){
 			e.printStackTrace();
