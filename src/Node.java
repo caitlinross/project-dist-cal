@@ -101,7 +101,7 @@ public class Node {
 		if (nodes.size() > 1 && newAppt != null){
 			for (Integer node:nodes){
 				if (node != this.nodeId){
-					System.out.println("Send to node " + node);
+					System.out.println("Send new appt to node " + node);
 					send(newAppt, node);
 				}
 			}
@@ -109,6 +109,41 @@ public class Node {
 		
 	}
 	
+	public void deleteOldAppointment(String name) {
+		for (EventRecord eR : PL){
+			//find corresponding appointment
+			if (eR.getAppointment().getName() == "name") {
+				synchronized(lock) {
+					Appointment delAppt = eR.getAppointment();
+					
+					//delete appointment
+					delete(delAppt);
+
+					//clear calendar
+					for (Integer id:delAppt.getParticipants()) {
+						for (int j = delAppt.getStartIndex(); j < delAppt.getEndIndex(); j++) {
+							this.calendars[id][delAppt.getDay().ordinal()][j] = 0;
+						}
+					}
+					//if appt involves other nodes, send msgs
+					if (delAppt.getParticipants().size() > 1) {
+						for (Integer node:delAppt.getParticipants()) {
+							if (node != this.nodeId){
+								System.out.println("Send appt deletion to node " + node);
+								send(delAppt, node);
+							}
+						}
+					}
+
+					
+				}
+			}
+		}
+	}
+	
+	public void printCalendar() {
+		
+	}
 	// write an event to the log
 	public void writeToLog(EventRecord eR){
 		try{
@@ -265,6 +300,7 @@ public class Node {
 	
 	// creates NP, then sends <NP, T> to node k
 	public void send(Appointment appt, int k){
+		//TODO: does the function need to be passed appt?
 		// create NP to send
 		synchronized(lock){
 			for (EventRecord eR:PL){
@@ -336,7 +372,7 @@ public class Node {
 						//between start and end indices, for the given day
 						for (Integer id:dR.getAppointment().getParticipants()) {
 							for (int j = dR.getAppointment().getStartIndex(); j < dR.getAppointment().getEndIndex(); j++) {
-								println("You just scheduled over an existing appt");
+								System.out.println("You just scheduled over an existing appt");
 								this.calendars[id][dR.getAppointment().getDay().ordinal()][j] = 1;
 							}
 						}
@@ -385,7 +421,7 @@ public class Node {
 				
 				saveNodeState();
 			}
-		}
+		}//end lock
 		
 	}
 
