@@ -102,7 +102,7 @@ public class Node {
 			for (Integer node:nodes){
 				if (node != this.nodeId){
 					System.out.println("Send new appt to node " + node);
-					send(newAppt, node);
+					send(node);
 				}
 			}
 		}
@@ -130,7 +130,7 @@ public class Node {
 						for (Integer node:delAppt.getParticipants()) {
 							if (node != this.nodeId){
 								System.out.println("Send appt deletion to node " + node);
-								send(delAppt, node);
+								send(node);
 							}
 						}
 					}
@@ -142,6 +142,25 @@ public class Node {
 	}
 	
 	public void printCalendar() {
+		Set<EventRecord> currentErs = new HashSet<EventRecord>();
+		for (EventRecord er:PL){
+			if (er.getOperation() == "add") {
+					currentErs.add(er);
+			}
+		}
+		for (EventRecord er:PL) {
+			if (er.getOperation() == "delete") {
+				currentErs.remove(er);
+			}
+		}
+		//now have set of all appointments event records which are currently in calendar
+		//next: get ers by day, and print them
+		ArrayList<Appointment> currentApts = new ArrayList<Appointment>();
+		for (EventRecord er:currentErs) {
+			if (er.getAppointment().getDay().ordinal() == 1) {
+				
+			}
+		}
 		
 	}
 	// write an event to the log
@@ -299,7 +318,7 @@ public class Node {
 	}
 	
 	// creates NP, then sends <NP, T> to node k
-	public void send(Appointment appt, int k){
+	public void send(int k){
 		//TODO: does the function need to be passed appt?
 		// create NP to send
 		synchronized(lock){

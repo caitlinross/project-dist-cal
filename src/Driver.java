@@ -87,7 +87,7 @@ public class Driver {
 			String action;
 			String name;
 
-			System.out.println("Would you like to add or delete an appointment\n?");
+			System.out.println("Would you like to add or delete an appointment, or print the calendar\n?");
 			action = in.nextLine();
 			if (action == "add") {
 				int start;
