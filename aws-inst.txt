@@ -1,0 +1,11 @@
+$ aws ec2 create-security-group --group-name devenv-sg --description "security group for development environment in EC2"
+$ aws ec2 authorize-security-group-ingress --group-name devenv-sg --protocol tcp --port 22 --cidr 0.0.0.0/0
+
+$ aws ec2 create-key-pair --key-name devenv-key --query 'KeyMaterial' --output text > devenv-key.pem
+$ chmod 400 devenv-key.pem
+
+$ aws ec2 run-instances --image-id ami-29ebb519 --count 1 --instance-type t2.micro --key-name devenv-key --security-groups devenv-sg --query 'Instances[0].InstanceId'
+$ aws ec2 describe-instances --instance-ids <prev-output> --query 'Reservations[0].Instances[0].PublicIpAddress'
+
+$ ssh -i devenv-key.pem ubuntu@<prev-output>
+	
