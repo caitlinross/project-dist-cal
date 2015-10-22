@@ -16,12 +16,11 @@ public class Driver {
 	 * recovery: 0->new run, otherwise->recovery startup
 	 */
 	public static void main(String[] args) {
-		// TODO change these to command line parameters
 		String filename = args[0]; // node setup file
 		int myID = Integer.parseInt(args[1]);
 		File file = new File(filename);
 		BufferedReader reader = null;
-		int totalNodes = Integer.parseInt(args[2]);  // TODO change later
+		int totalNodes = Integer.parseInt(args[2]);  
 		String[] hostNames = new String[totalNodes];
 		boolean recovery;
 		if (Integer.parseInt(args[3]) == 0)

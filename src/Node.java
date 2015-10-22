@@ -28,7 +28,6 @@ public class Node {
 	/**
 	 * 
 	 */
-	// TODO need to add in node recovery from crash 
 	// TODO handle appointment conflict
 	/**
 	 * @param totalNodes
@@ -45,19 +44,18 @@ public class Node {
 		this.port = port;
 		this.hostNames = hostNames;
 		
+		this.calendars = new int[totalNodes][7][48];
+		this.PL = new HashSet<EventRecord>();
+		this.NE = new HashSet<EventRecord>();
+		this.NP = new HashSet<EventRecord>();
+		this.currentAppts = new HashSet<Appointment>();  // dictionary
+		this.T = new int[totalNodes][totalNodes];
+		this.c = 0;
+		
+		// recover node state if this is restarting from crash
 		if (recovery)
 			restoreNodeState();
-		else{
-			this.calendars = new int[totalNodes][7][48];
-			
-			this.PL = new HashSet<EventRecord>();
-			this.NE = new HashSet<EventRecord>();
-			this.NP = new HashSet<EventRecord>();
-			
-			this.currentAppts = new HashSet<Appointment>();  // dictionary
-			this.T = new int[totalNodes][totalNodes];
-			this.c = 0;
-		}
+		
 	}
 
 	/**
@@ -157,11 +155,7 @@ public class Node {
 			FileWriter fw = new FileWriter("nodestate.txt", false);  // overwrite each time
 			BufferedWriter bw = new BufferedWriter(fw);
 			
-			// line 1: nodeid, numnodes, port, hostnames, c
-			//bw.write(this.nodeId + "," + this.numNodes + "," + this.port + ",");
-			//for (int i = 0; i < hostNames.length; i++){
-			//	bw.write(hostNames[i] + ",");
-			//}
+			// line 1: c
 			synchronized(lock){
 				bw.write(this.c + "\n");
 			}
@@ -260,40 +254,28 @@ public class Node {
 			int lineNo = 0;
 			int cal = 0;
 			int index = 0;
-			int tLimit = 7*numNodes + numNodes + 1;
+			int tLimit = 7*numNodes + numNodes;
 			int npLimit = 0, plLimit = 0, neLimit = 0, apptLimit = 0;
 			int numNP = 0, numNE = 0, numPL = 0, numAppt = 0;
 		    while ((text = reader.readLine()) != null) {
 		    	String[] parts = text.split(",");
-		        if (lineNo == 0){ // restore general node info 
-		        	//this.nodeId = Integer.parseInt(parts[0]);
-		        	//this.numNodes = Integer.parseInt(parts[1]);
-		        	//this.port = Integer.parseInt(parts[2]);
-		        	//for (int i = 0; i < this.hostNames.length; i++){
-		        	//	this.hostNames[i] = parts[3+i];
-		        	//}
-		        	synchronized(lock){
-		        		this.c = Integer.parseInt(parts[0]);
-		        	}
+		        if (lineNo == 0){ // restore node clock
+		        	this.c = Integer.parseInt(parts[0]);
 		        }
-		        else if (lineNo > 0 && lineNo <= 7*numNodes + 1 ){ // restore calendar
-		        	synchronized(lock){
-			        	for (int j = 0; j < parts.length; j++){
-			        		System.out.println(parts[j]);
+		        else if (lineNo > 0 && lineNo <= 7*numNodes ){ // restore calendar
+		        		int len = parts.length;
+			        	for (int j = 0; j < len; j++){
 			        		this.calendars[cal][index][j] = Integer.parseInt(parts[j]);
 			        	}
-		        	}
 		        	index++;
 		        	if (lineNo % 7 == 0){// time to go to next node's calendar
 		        		cal++;
 		        		index = 0;
 		        	}
 		        }
-		        else if (lineNo > 7*numNodes + 1 && lineNo <= tLimit){ // restore T
-		        	synchronized(lock){
-			        	for (int i = 0; i < this.T.length; i++){
-			        		T[index][i] = Integer.parseInt(parts[i]);
-			        	}
+		        else if (lineNo > 7*numNodes && lineNo <= tLimit){ // restore T
+		        	for (int i = 0; i < this.T.length; i++){
+		        		T[index][i] = Integer.parseInt(parts[i]);
 		        	}
 		        	index++;
 		        }
@@ -308,9 +290,7 @@ public class Node {
 		        	Appointment appt = new Appointment(parts[3], Day.values()[Integer.parseInt(parts[4])], Integer.parseInt(parts[5]), Integer.parseInt(parts[6]), 
 		        			parts[7], parts[8], list);
 		        	EventRecord eR = new EventRecord(parts[0], Integer.parseInt(parts[1]), Integer.parseInt(parts[2]), appt);
-		        	synchronized(lock){
-		        		NP.add(eR);
-		        	}
+		        	NP.add(eR);
 		        	
 		        }
 		        else if (lineNo == npLimit + 1){
@@ -324,9 +304,7 @@ public class Node {
 		        	Appointment appt = new Appointment(parts[3], Day.values()[Integer.parseInt(parts[4])], Integer.parseInt(parts[5]), Integer.parseInt(parts[6]), 
 		        			parts[7], parts[8], list);
 		        	EventRecord eR = new EventRecord(parts[0], Integer.parseInt(parts[1]), Integer.parseInt(parts[2]), appt);
-		        	synchronized(lock){
-		        		PL.add(eR);
-		        	}
+		        	PL.add(eR);
 		        }
 		        else if (lineNo == plLimit + 1){
 		        	numNE = Integer.parseInt(parts[1]);
@@ -339,9 +317,7 @@ public class Node {
 		        	Appointment appt = new Appointment(parts[3], Day.values()[Integer.parseInt(parts[4])], Integer.parseInt(parts[5]), Integer.parseInt(parts[6]), 
 		        			parts[7], parts[8], list);
 		        	EventRecord eR = new EventRecord(parts[0], Integer.parseInt(parts[1]), Integer.parseInt(parts[2]), appt);
-		        	synchronized(lock){
-		        		NE.add(eR);
-		        	}
+		        	NE.add(eR);
 		        }
 		        else if (lineNo == neLimit + 1){
 		        	numAppt = Integer.parseInt(parts[1]);
@@ -349,13 +325,11 @@ public class Node {
 		        }
 		        else if (lineNo > neLimit + 1 && lineNo <= apptLimit && numAppt > 0){
 		        	ArrayList<Integer> list = new ArrayList<Integer>();
-		        	for (int i = 9; i < parts.length; i++)
+		        	for (int i = 6; i < parts.length; i++)
 		        		list.add(Integer.parseInt(parts[i]));
-		        	Appointment appt = new Appointment(parts[3], Day.values()[Integer.parseInt(parts[4])], Integer.parseInt(parts[5]), Integer.parseInt(parts[6]), 
-		        			parts[7], parts[8], list);
-		        	synchronized(lock){
-		        		currentAppts.add(appt);
-		        	}
+		        	Appointment appt = new Appointment(parts[0], Day.values()[Integer.parseInt(parts[1])], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), 
+		        			parts[4], parts[5], list);
+		        	currentAppts.add(appt);
 		        }
 		        lineNo++;
 		    }
@@ -431,6 +405,7 @@ public class Node {
 	}
 	
 	// receives <NP, T> from node k
+	@SuppressWarnings("unchecked")
 	public void receive(Socket clientSocket){
 		Set<EventRecord> NPk = null;
 		int Tk[][] = null;
@@ -463,7 +438,6 @@ public class Node {
 				}
 				
 				// update the dictionary and calendar and log
-				// TODO update calendar and write new events received to log
 				for (EventRecord dR:NE){
 					if (dR.getOperation().equals("insert")){
 						currentAppts.add(dR.getAppointment());
