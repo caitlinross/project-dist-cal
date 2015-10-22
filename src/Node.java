@@ -438,7 +438,7 @@ public class Node {
 				}
 				
 				// update the dictionary and calendar and log
-				for (EventRecord dR:NE){
+				/*for (EventRecord dR:NE){
 					if (dR.getOperation().equals("insert")){
 						currentAppts.add(dR.getAppointment());
 						//update calendar time slot to 1 for each node in appt list, for each time slot 
@@ -464,6 +464,44 @@ public class Node {
 							}
 						}
 						writeToLog(dR);
+					}
+				}*/
+				// check for appts in currentAppts that need to be deleted
+				for (Appointment appt:currentAppts){
+					EventRecord dR = containsAppointment(NE, appt);
+					if (dR != null && dR.getOperation().equals("delete")){
+						currentAppts.remove(appt);
+						// update calendar
+						for (Integer id:dR.getAppointment().getParticipants()) {
+							for (int j = dR.getAppointment().getStartIndex(); j < dR.getAppointment().getEndIndex(); j++) {
+								this.calendars[id][dR.getAppointment().getDay().ordinal()][j] = 0;
+							}
+						}
+						writeToLog(dR);
+					}
+				}
+				// check for events in NE that need to be inserted into currentAppts
+				for (EventRecord eR:NE){
+					if (eR.getOperation().equals("insert")){
+						writeToLog(eR);
+						EventRecord dR = containsAppointment(NE, eR.getAppointment());
+						if (dR == null){ // there's no 'delete()' for this appointment so add to currentAppts
+							currentAppts.add(eR.getAppointment());
+							//update calendar time slot to 1 for each node in appt list, for each time slot 
+							//between start and end indices, for the given day
+							for (Integer id:eR.getAppointment().getParticipants()) {
+								for (int j = eR.getAppointment().getStartIndex(); j < eR.getAppointment().getEndIndex(); j++) {
+									if (this.calendars[id][eR.getAppointment().getDay().ordinal()][j] == 1)
+										System.out.println("You just scheduled over an existing appt");
+									this.calendars[id][eR.getAppointment().getDay().ordinal()][j] = 1;
+								}
+							}
+							
+						}
+						else {  // received an insert() and delete() for same appointment
+							writeToLog(dR);
+						}
+						
 					}
 				}
 				
@@ -497,6 +535,16 @@ public class Node {
 			}
 		}
 		
+	}
+	
+	// determine if a given appointment is the same as one in an EventRecord
+	// useful when trying to find the insert or delete of a given appointment
+	public static EventRecord containsAppointment(Set<EventRecord> set, Appointment appt){
+		for (EventRecord eR:set){
+			if (eR.getAppointment().equals(appt) && eR.getOperation().equals("delete"))
+				return eR;
+		}
+		return null;
 	}
 
 
