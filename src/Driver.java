@@ -12,6 +12,8 @@ public class Driver {
 	
 	/**
 	 * @param args
+	 * cmdline call: Driver node-setup-file.txt myID totalNodes recovery
+	 * recovery: 0->new run, otherwise->recovery startup
 	 */
 	public static void main(String[] args) {
 		// TODO change these to command line parameters
@@ -19,8 +21,14 @@ public class Driver {
 		int myID = Integer.parseInt(args[1]);
 		File file = new File(filename);
 		BufferedReader reader = null;
-		int totalNodes = 2;  // TODO change later
+		int totalNodes = Integer.parseInt(args[2]);  // TODO change later
 		String[] hostNames = new String[totalNodes];
+		boolean recovery;
+		if (Integer.parseInt(args[3]) == 0)
+			recovery = false;
+		else
+			recovery = true;
+		
 		try {
 			reader = new BufferedReader(new FileReader(file));
 			String text = null;
@@ -51,7 +59,7 @@ public class Driver {
 		
 		System.out.println(hostname);
 		//set up this node
-		final Node node = new Node(totalNodes, port, hostNames, myID);
+		final Node node = new Node(totalNodes, port, hostNames, myID, recovery);
 		
 		// set up this nodes serverSocket that continuously listens for other nodes on a new thread
 		Runnable listenThread = new Runnable(){

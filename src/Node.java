@@ -13,6 +13,7 @@ public class Node {
 	private int nodeId;
 	private int numNodes; 
 	private String logName;
+	private String stateLog;
 	
 	// variables that need to be concerned with synchronization
 	private Object lock = new Object();
@@ -29,24 +30,34 @@ public class Node {
 	 */
 	// TODO need to add in node recovery from crash 
 	// TODO handle appointment conflict
-	public Node(int totalNodes, int port, String[] hostNames, int nodeID) {
+	/**
+	 * @param totalNodes
+	 * @param port
+	 * @param hostNames
+	 * @param nodeID
+	 * @param recovery
+	 */
+	public Node(int totalNodes, int port, String[] hostNames, int nodeID, boolean recovery) {
+		this.logName = "appointments.log";
+		this.stateLog = "nodestate.txt";
 		this.nodeId = nodeID;
 		this.numNodes = totalNodes;
-		
-		this.calendars = new int[totalNodes][7][48];
-		
-		this.PL = new HashSet<EventRecord>();
-		this.NE = new HashSet<EventRecord>();
-		this.NP = new HashSet<EventRecord>();
-		
-		this.currentAppts = new HashSet<Appointment>();  // dictionary
-		this.T = new int[totalNodes][totalNodes];
-		this.c = 0;
-		
 		this.port = port;
 		this.hostNames = hostNames;
 		
-		this.logName = "appointments.log";
+		if (recovery)
+			restoreNodeState();
+		else{
+			this.calendars = new int[totalNodes][7][48];
+			
+			this.PL = new HashSet<EventRecord>();
+			this.NE = new HashSet<EventRecord>();
+			this.NP = new HashSet<EventRecord>();
+			
+			this.currentAppts = new HashSet<Appointment>();  // dictionary
+			this.T = new int[totalNodes][totalNodes];
+			this.c = 0;
+		}
 	}
 
 	/**
@@ -147,87 +158,211 @@ public class Node {
 			BufferedWriter bw = new BufferedWriter(fw);
 			
 			// line 1: nodeid, numnodes, port, hostnames, c
-			bw.write(this.nodeId + "," + this.numNodes + "," + this.port + ",");
-			for (int i = 0; i < hostNames.length; i++){
-				bw.write(hostNames[i] + ",");
+			//bw.write(this.nodeId + "," + this.numNodes + "," + this.port + ",");
+			//for (int i = 0; i < hostNames.length; i++){
+			//	bw.write(hostNames[i] + ",");
+			//}
+			synchronized(lock){
+				bw.write(this.c + "\n");
 			}
-			bw.write(this.c + "\n");
 			
 			// then save the 2D calendar array for each node
-			for (int i = 0; i < this.calendars.length; i++){
-				for (int j = 0; j < this.calendars[i].length; j++){
-					for (int k = 0; k < this.calendars[i][j].length; k++){
-						bw.write(Integer.toString(this.calendars[i][j][k]));
-						if (k != this.calendars[i][j].length - 1)
+			synchronized(lock){
+				for (int i = 0; i < this.calendars.length; i++){
+					for (int j = 0; j < this.calendars[i].length; j++){
+						for (int k = 0; k < this.calendars[i][j].length; k++){
+							bw.write(Integer.toString(this.calendars[i][j][k]));
+							if (k != this.calendars[i][j].length - 1)
+								bw.write(",");
+						}
+						bw.write("\n");
+					}
+				}
+			}
+			
+			// save T
+			synchronized(lock){
+				for (int i = 0; i < this.T.length; i++){
+					for (int j = 0; j < this.T[i].length; j++){
+						bw.write(Integer.toString(this.T[i][j]));
+						if (j != this.T[i].length - 1){
 							bw.write(",");
+						}
 					}
 					bw.write("\n");
 				}
 			}
 			
-			// save T
-			for (int i = 0; i < this.T.length; i++){
-				for (int j = 0; j < this.T[i].length; j++){
-					bw.write(Integer.toString(this.T[i][j]));
-					if (j != this.T[i].length - 1){
-						bw.write(",");
-					}
-				}
-				bw.write("\n");
-			}
-			
 			// save events in NP, PL, NE, currentAppts in following format:
 			// operation, time, nodeID, appt name, day, start, end, sAMPM, eAMPM, participants
 			// for days, use ordinals of enums,
-			bw.write("NP," + NP.size() + "\n");
-			for (EventRecord eR:NP){
-				bw.write(eR.getOperation() + "," + eR.getTime() + "," + eR.getNodeId() + "," + eR.getAppointment().getName() + "," + eR.getAppointment().getDay() + ","
-						+ eR.getAppointment().getStart() + "," + eR.getAppointment().getEnd() + "," + eR.getAppointment().getsAMPM() + "," + eR.getAppointment().geteAMPM() + ",");
-				for (int i = 0; i < eR.getAppointment().getParticipants().size(); i++){
-					bw.write(Integer.toString(eR.getAppointment().getParticipants().get(i)));
-					if (i != eR.getAppointment().getParticipants().size() - 1)
-						bw.write(",");
+			synchronized(lock){
+				bw.write("NP," + NP.size() + "\n");
+				for (EventRecord eR:NP){
+					bw.write(eR.getOperation() + "," + eR.getTime() + "," + eR.getNodeId() + "," + eR.getAppointment().getName() + "," + eR.getAppointment().getDay().ordinal() + ","
+							+ eR.getAppointment().getStart() + "," + eR.getAppointment().getEnd() + "," + eR.getAppointment().getsAMPM() + "," + eR.getAppointment().geteAMPM() + ",");
+					for (int i = 0; i < eR.getAppointment().getParticipants().size(); i++){
+						bw.write(Integer.toString(eR.getAppointment().getParticipants().get(i)));
+						if (i != eR.getAppointment().getParticipants().size() - 1)
+							bw.write(",");
+					}
+					bw.write("\n");
 				}
-				bw.write("\n");
-			}
-			
-			bw.write("PL," + PL.size() + "\n");
-			for (EventRecord eR:PL){
-				bw.write(eR.getOperation() + "," + eR.getTime() + "," + eR.getNodeId() + "," + eR.getAppointment().getName() + "," + eR.getAppointment().getDay() + ","
-						+ eR.getAppointment().getStart() + "," + eR.getAppointment().getEnd() + "," + eR.getAppointment().getsAMPM() + "," + eR.getAppointment().geteAMPM() + ",");
-				for (int i = 0; i < eR.getAppointment().getParticipants().size(); i++){
-					bw.write(Integer.toString(eR.getAppointment().getParticipants().get(i)));
-					if (i != eR.getAppointment().getParticipants().size() - 1)
-						bw.write(",");
+				
+				bw.write("PL," + PL.size() + "\n");
+				for (EventRecord eR:PL){
+					bw.write(eR.getOperation() + "," + eR.getTime() + "," + eR.getNodeId() + "," + eR.getAppointment().getName() + "," + eR.getAppointment().getDay().ordinal() + ","
+							+ eR.getAppointment().getStart() + "," + eR.getAppointment().getEnd() + "," + eR.getAppointment().getsAMPM() + "," + eR.getAppointment().geteAMPM() + ",");
+					for (int i = 0; i < eR.getAppointment().getParticipants().size(); i++){
+						bw.write(Integer.toString(eR.getAppointment().getParticipants().get(i)));
+						if (i != eR.getAppointment().getParticipants().size() - 1)
+							bw.write(",");
+					}
+					bw.write("\n");
 				}
-				bw.write("\n");
-			}
-			
-			bw.write("NE," + NE.size() + "\n");
-			for (EventRecord eR:NE){
-				bw.write(eR.getOperation() + "," + eR.getTime() + "," + eR.getNodeId() + "," + eR.getAppointment().getName() + "," + eR.getAppointment().getDay() + ","
-						+ eR.getAppointment().getStart() + "," + eR.getAppointment().getEnd() + "," + eR.getAppointment().getsAMPM() + "," + eR.getAppointment().geteAMPM() + ",");
-				for (int i = 0; i < eR.getAppointment().getParticipants().size(); i++){
-					bw.write(Integer.toString(eR.getAppointment().getParticipants().get(i)));
-					if (i != eR.getAppointment().getParticipants().size() - 1)
-						bw.write(",");
+				
+				bw.write("NE," + NE.size() + "\n");
+				for (EventRecord eR:NE){
+					bw.write(eR.getOperation() + "," + eR.getTime() + "," + eR.getNodeId() + "," + eR.getAppointment().getName() + "," + eR.getAppointment().getDay().ordinal() + ","
+							+ eR.getAppointment().getStart() + "," + eR.getAppointment().getEnd() + "," + eR.getAppointment().getsAMPM() + "," + eR.getAppointment().geteAMPM() + ",");
+					for (int i = 0; i < eR.getAppointment().getParticipants().size(); i++){
+						bw.write(Integer.toString(eR.getAppointment().getParticipants().get(i)));
+						if (i != eR.getAppointment().getParticipants().size() - 1)
+							bw.write(",");
+					}
+					bw.write("\n");
 				}
-				bw.write("\n");
-			}
-			
-			bw.write("current," + currentAppts.size() + "\n");
-			for (Appointment appt:currentAppts){
-				bw.write(appt.getName() + "," + appt.getDay() + "," + appt.getStart() + "," + appt.getEnd() + "," + appt.getsAMPM() + "," + appt.geteAMPM() + ",");
-				for (int i = 0; i < appt.getParticipants().size(); i++){
-					bw.write(Integer.toString(appt.getParticipants().get(i)));
-					if (i != appt.getParticipants().size() - 1)
-						bw.write(",");
+				
+				bw.write("current," + currentAppts.size() + "\n");
+				for (Appointment appt:currentAppts){
+					bw.write(appt.getName() + "," + appt.getDay().ordinal() + "," + appt.getStart() + "," + appt.getEnd() + "," + appt.getsAMPM() + "," + appt.geteAMPM() + ",");
+					for (int i = 0; i < appt.getParticipants().size(); i++){
+						bw.write(Integer.toString(appt.getParticipants().get(i)));
+						if (i != appt.getParticipants().size() - 1)
+							bw.write(",");
+					}
+					bw.write("\n");
 				}
-				bw.write("\n");
 			}
 			bw.close();
 		}
 		catch (IOException e){
+			e.printStackTrace();
+		}
+	}
+	
+	// recover from node failure
+	public void restoreNodeState(){
+		BufferedReader reader = null;
+		try {
+			reader = new BufferedReader(new FileReader(this.stateLog));
+			String text = null;
+			int lineNo = 0;
+			int cal = 0;
+			int index = 0;
+			int tLimit = 7*numNodes + numNodes + 1;
+			int npLimit = 0, plLimit = 0, neLimit = 0, apptLimit = 0;
+			int numNP = 0, numNE = 0, numPL = 0, numAppt = 0;
+		    while ((text = reader.readLine()) != null) {
+		    	String[] parts = text.split(",");
+		        if (lineNo == 0){ // restore general node info 
+		        	//this.nodeId = Integer.parseInt(parts[0]);
+		        	//this.numNodes = Integer.parseInt(parts[1]);
+		        	//this.port = Integer.parseInt(parts[2]);
+		        	//for (int i = 0; i < this.hostNames.length; i++){
+		        	//	this.hostNames[i] = parts[3+i];
+		        	//}
+		        	synchronized(lock){
+		        		this.c = Integer.parseInt(parts[0]);
+		        	}
+		        }
+		        else if (lineNo > 0 && lineNo <= 7*numNodes + 1 ){ // restore calendar
+		        	synchronized(lock){
+			        	for (int j = 0; j < parts.length; j++){
+			        		System.out.println(parts[j]);
+			        		this.calendars[cal][index][j] = Integer.parseInt(parts[j]);
+			        	}
+		        	}
+		        	index++;
+		        	if (lineNo % 7 == 0){// time to go to next node's calendar
+		        		cal++;
+		        		index = 0;
+		        	}
+		        }
+		        else if (lineNo > 7*numNodes + 1 && lineNo <= tLimit){ // restore T
+		        	synchronized(lock){
+			        	for (int i = 0; i < this.T.length; i++){
+			        		T[index][i] = Integer.parseInt(parts[i]);
+			        	}
+		        	}
+		        	index++;
+		        }
+		        else if (lineNo == tLimit + 1){ 
+		        	numNP = Integer.parseInt(parts[1]);
+		        	npLimit = lineNo + numNP;
+		        }
+		        else if (lineNo > tLimit + 1 && lineNo <= npLimit && numNP > 0){ // Restore NP's hashset
+		        	ArrayList<Integer> list = new ArrayList<Integer>();
+		        	for (int i = 9; i < parts.length; i++)
+		        		list.add(Integer.parseInt(parts[i]));
+		        	Appointment appt = new Appointment(parts[3], Day.values()[Integer.parseInt(parts[4])], Integer.parseInt(parts[5]), Integer.parseInt(parts[6]), 
+		        			parts[7], parts[8], list);
+		        	EventRecord eR = new EventRecord(parts[0], Integer.parseInt(parts[1]), Integer.parseInt(parts[2]), appt);
+		        	synchronized(lock){
+		        		NP.add(eR);
+		        	}
+		        	
+		        }
+		        else if (lineNo == npLimit + 1){
+		        	numPL = Integer.parseInt(parts[1]);
+		        	plLimit = lineNo + numPL;
+		        }
+		        else if (lineNo > npLimit + 1 && lineNo <= plLimit && numPL > 0){
+		        	ArrayList<Integer> list = new ArrayList<Integer>();
+		        	for (int i = 9; i < parts.length; i++)
+		        		list.add(Integer.parseInt(parts[i]));
+		        	Appointment appt = new Appointment(parts[3], Day.values()[Integer.parseInt(parts[4])], Integer.parseInt(parts[5]), Integer.parseInt(parts[6]), 
+		        			parts[7], parts[8], list);
+		        	EventRecord eR = new EventRecord(parts[0], Integer.parseInt(parts[1]), Integer.parseInt(parts[2]), appt);
+		        	synchronized(lock){
+		        		PL.add(eR);
+		        	}
+		        }
+		        else if (lineNo == plLimit + 1){
+		        	numNE = Integer.parseInt(parts[1]);
+		        	neLimit = lineNo + numNE;
+		        }
+		        else if (lineNo > plLimit + 1 && lineNo <=  neLimit && numNE > 0){
+		        	ArrayList<Integer> list = new ArrayList<Integer>();
+		        	for (int i = 9; i < parts.length; i++)
+		        		list.add(Integer.parseInt(parts[i]));
+		        	Appointment appt = new Appointment(parts[3], Day.values()[Integer.parseInt(parts[4])], Integer.parseInt(parts[5]), Integer.parseInt(parts[6]), 
+		        			parts[7], parts[8], list);
+		        	EventRecord eR = new EventRecord(parts[0], Integer.parseInt(parts[1]), Integer.parseInt(parts[2]), appt);
+		        	synchronized(lock){
+		        		NE.add(eR);
+		        	}
+		        }
+		        else if (lineNo == neLimit + 1){
+		        	numAppt = Integer.parseInt(parts[1]);
+		        	apptLimit = lineNo + numAppt;
+		        }
+		        else if (lineNo > neLimit + 1 && lineNo <= apptLimit && numAppt > 0){
+		        	ArrayList<Integer> list = new ArrayList<Integer>();
+		        	for (int i = 9; i < parts.length; i++)
+		        		list.add(Integer.parseInt(parts[i]));
+		        	Appointment appt = new Appointment(parts[3], Day.values()[Integer.parseInt(parts[4])], Integer.parseInt(parts[5]), Integer.parseInt(parts[6]), 
+		        			parts[7], parts[8], list);
+		        	synchronized(lock){
+		        		currentAppts.add(appt);
+		        	}
+		        }
+		        lineNo++;
+		    }
+		    reader.close();
+		} catch (FileNotFoundException e2) {
+			e2.printStackTrace();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
@@ -336,7 +471,7 @@ public class Node {
 						//between start and end indices, for the given day
 						for (Integer id:dR.getAppointment().getParticipants()) {
 							for (int j = dR.getAppointment().getStartIndex(); j < dR.getAppointment().getEndIndex(); j++) {
-								println("You just scheduled over an existing appt");
+								System.out.println("You just scheduled over an existing appt");
 								this.calendars[id][dR.getAppointment().getDay().ordinal()][j] = 1;
 							}
 						}
