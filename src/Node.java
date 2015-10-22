@@ -336,7 +336,8 @@ public class Node {
 						//between start and end indices, for the given day
 						for (Integer id:dR.getAppointment().getParticipants()) {
 							for (int j = dR.getAppointment().getStartIndex(); j < dR.getAppointment().getEndIndex(); j++) {
-								println("You just scheduled over an existing appt");
+								if (this.calendars[id][dR.getAppointment().getDay().ordinal()][j] == 1)
+									System.out.println("You just scheduled over an existing appt");
 								this.calendars[id][dR.getAppointment().getDay().ordinal()][j] = 1;
 							}
 						}
