@@ -24,6 +24,7 @@ public class Node {
 	private Set<Appointment> currentAppts;
 	private int T[][];
 	private int c;
+	private boolean sendFail[];
 	
 	/**
 	 * 
@@ -51,6 +52,10 @@ public class Node {
 		this.currentAppts = new HashSet<Appointment>();  // dictionary
 		this.T = new int[totalNodes][totalNodes];
 		this.c = 0;
+		this.sendFail = new boolean[this.numNodes];
+		for (int i = 0; i < sendFail.length; i++){
+			sendFail[i] = false;
+		}
 		
 		// recover node state if this is restarting from crash
 		if (recovery)
@@ -397,7 +402,30 @@ public class Node {
 			objectOutput.close();
 			out.close();
 			socket.close();
-		} catch (IOException e) {
+			sendFail[k] = false;
+		} 
+		catch (ConnectException ce){
+			// send to process k failed
+			if (!sendFail[k]){  // only start if this hasn't already started
+				sendFail[k] = true;
+			
+				// start a thread that periodically checks for k to recover and send again
+				Runnable runnable = new Runnable() {
+                    public synchronized void run() {
+                    	while (sendFail[k]){
+	                        try {
+								Thread.sleep(5000);
+								send(appt, k);
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+                    	}
+                    }
+                };
+                new Thread(runnable).start();
+			}
+		}
+		catch (IOException e) {
 			e.printStackTrace();
 		}
         
@@ -438,34 +466,6 @@ public class Node {
 				}
 				
 				// update the dictionary and calendar and log
-				/*for (EventRecord dR:NE){
-					if (dR.getOperation().equals("insert")){
-						currentAppts.add(dR.getAppointment());
-						//update calendar time slot to 1 for each node in appt list, for each time slot 
-						//between start and end indices, for the given day
-						for (Integer id:dR.getAppointment().getParticipants()) {
-							for (int j = dR.getAppointment().getStartIndex(); j < dR.getAppointment().getEndIndex(); j++) {
-								if (this.calendars[id][dR.getAppointment().getDay().ordinal()][j] == 1)
-									System.out.println("You just scheduled over an existing appt");
-								this.calendars[id][dR.getAppointment().getDay().ordinal()][j] = 1;
-							}
-						}
-						writeToLog(dR);
-				
-					}
-				}
-				for (EventRecord dR:NE){
-					if (dR.getOperation().equals("delete") && currentAppts.contains(dR.getAppointment())){
-						currentAppts.remove(dR.getAppointment());
-						//update calendar
-						for (Integer id:dR.getAppointment().getParticipants()) {
-							for (int j = dR.getAppointment().getStartIndex(); j < dR.getAppointment().getEndIndex(); j++) {
-								this.calendars[id][dR.getAppointment().getDay().ordinal()][j] = 0;
-							}
-						}
-						writeToLog(dR);
-					}
-				}*/
 				// check for appts in currentAppts that need to be deleted
 				HashSet<Appointment> delAppts = new HashSet();
 				for (Appointment appt:currentAppts){
