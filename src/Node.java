@@ -152,43 +152,32 @@ public class Node {
 	}
 	//print out the calendar to the terminal
 	public void printCalendar() {
-		Set<EventRecord> currentErs = new HashSet<EventRecord>();
-		for (EventRecord er:PL){
-			if (er.getOperation() == "add") {
-					currentErs.add(er);
-			}
-		}
-		for (EventRecord er:PL) {
-			if (er.getOperation() == "delete") {
-				currentErs.remove(er);
-			}
-		}
 		//now have set of all appointments event records which are currently in calendar
 		//next: get ers by day, and print them
-		ArrayList<Appointment> currentAppts = new ArrayList<Appointment>();
+		ArrayList<Appointment> apptList = new ArrayList<Appointment>();
 		for (int i = 0; i < 7; i++) {
-			for (EventRecord er:currentErs) {
-				if (er.getAppointment().getDay().ordinal() == i) {
-					currentAppts.add(er.getAppointment());
+			for (Appointment appt:this.currentAppts) {
+				if (appt.getDay().ordinal() == i) {
+					apptList.add(appt);
 				}
 			}
-			Collections.sort(currentAppts);
+			Collections.sort(apptList);
 			//print out each day's appointments, ordered by start time
-			for (int j = 0; j < currentAppts.size(); j++) {
-				Appointment a = currentAppts.get(j);
+			for (int j = 0; j < apptList.size(); j++) {
+				Appointment a = apptList.get(j);
 				System.out.println("Appointment name: " + a.getName());
 				String partic = "";
 				for (int k = 0; k<a.getParticipants().size(); k++) {
-					partic.concat(String.valueOf(a.getParticipants().get(k)));
+					partic = partic.concat(String.valueOf(a.getParticipants().get(k)));
 					if (k < (a.getParticipants().size() - 1)) {
-						partic.concat(", ");
+						partic = partic.concat(", ");
 					}
 				}
 				System.out.println("Participants: " + partic);
-				System.out.println("Start time: " + a.getStartIndex());
-				System.out.println("End time: "+ a.getEndIndex());
+				System.out.println("Start time: " + a.getStart() + " " + a.getsAMPM());
+				System.out.println("End time: "+ a.getEnd() + " " + a.geteAMPM());
 			}
-			currentAppts.clear();
+			apptList.clear();
 		}
 	}
 	

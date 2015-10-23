@@ -95,8 +95,8 @@ public class Driver {
 			String name;
 
 			System.out.println("Would you like to add or delete an appointment, or print the calendar\n?");
-			action = in.nextLine();
-			if (action == "add") {
+			action = in.nextLine().trim();
+			if (action.equals("add")) {
 				int start;
 				int end;
 				String sAMPM;
@@ -141,13 +141,13 @@ public class Driver {
 				
 				node.createNewAppointment(participants, name, day, start, end, sAMPM, eAMPM);
 			}
-			else if (action == "delete") {
+			else if (action.equals("delete")) {
 				System.out.println("Please enter the name of the appointment\n");
 				name = in.nextLine();
 				node.deleteOldAppointment(name);
 				
 			}
-			else if (action == "print") {
+			else if (action.equals("print")) {
 					node.printCalendar();
 			}
 			else {
