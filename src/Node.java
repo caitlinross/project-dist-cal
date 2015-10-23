@@ -467,7 +467,7 @@ public class Node {
 				
 				// update the dictionary and calendar and log
 				// check for appts in currentAppts that need to be deleted
-				HashSet<Appointment> delAppts = new HashSet();
+				HashSet<Appointment> delAppts = new HashSet<Appointment>();
 				for (Appointment appt:currentAppts){
 					EventRecord dR = containsAppointment(NE, appt);
 					if (dR != null && dR.getOperation().equals("delete")){
