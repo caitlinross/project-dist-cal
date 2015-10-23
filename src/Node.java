@@ -149,7 +149,7 @@ public class Node {
 			}
 		}
 	}
-	
+	//print out the calendar to the terminal
 	public void printCalendar() {
 		Set<EventRecord> currentErs = new HashSet<EventRecord>();
 		for (EventRecord er:PL){
@@ -164,14 +164,34 @@ public class Node {
 		}
 		//now have set of all appointments event records which are currently in calendar
 		//next: get ers by day, and print them
-		ArrayList<Appointment> currentApts = new ArrayList<Appointment>();
-		for (EventRecord er:currentErs) {
-			if (er.getAppointment().getDay().ordinal() == 1) {
-				
+		ArrayList<Appointment> currentAppts = new ArrayList<Appointment>();
+		for (int i = 0; i < 7; i++) {
+			for (EventRecord er:currentErs) {
+				if (er.getAppointment().getDay().ordinal() == i) {
+					currentAppts.add(er.getAppointment());
+				}
 			}
+			Collections.sort(currentAppts);
+			//print out each day's appointments, ordered by start time
+			for (int j = 0; j < currentAppts.size(); j++) {
+				Appointment a = currentAppts.get(j);
+				System.out.println("Appointment name: " + a.getName());
+				String partic = "";
+				for (int k = 0; k<a.getParticipants().size(); k++) {
+					partic.concat(String.valueOf(a.getParticipants().get(k)));
+					if (k < (a.getParticipants().size() - 1)) {
+						partic.concat(", ");
+					}
+				}
+				System.out.println("Participants: " + partic);
+				System.out.println("Start time: " + a.getStartIndex());
+				System.out.println("End time: "+ a.getEndIndex());
+			}
+			currentAppts.clear();
 		}
-		
 	}
+	
+	
 	// write an event to the log
 	public void writeToLog(EventRecord eR){
 		try{

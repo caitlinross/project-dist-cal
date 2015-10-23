@@ -8,7 +8,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 @SuppressWarnings("serial")
-public class Appointment implements Serializable {
+public class Appointment implements Serializable, Comparable<Appointment> {
 	// all fields are serializable
 	private String name;
 	private Day day;
@@ -22,6 +22,8 @@ public class Appointment implements Serializable {
 	private int startIndex;
 	private int endIndex;
 	
+	
+	
 	public Appointment(String name, Day day, int start, int end, String sAMPM, String eAMPM, ArrayList<Integer> participants) {
 		this.name = name;
 		this.day = day;
@@ -33,6 +35,10 @@ public class Appointment implements Serializable {
 		this.setStartIndex(convertTime(start, sAMPM));
 		this.setEndIndex(convertTime(end, eAMPM));
 	}
+	
+	public int compareTo(Appointment otherAppt) {
+        return this.getStartIndex() - otherAppt.getStartIndex();
+    }
 	
 	public String getName() {
 		return this.name;
