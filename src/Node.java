@@ -467,10 +467,12 @@ public class Node {
 					}
 				}*/
 				// check for appts in currentAppts that need to be deleted
+				HashSet<Appointment> delAppts = new HashSet();
 				for (Appointment appt:currentAppts){
 					EventRecord dR = containsAppointment(NE, appt);
 					if (dR != null && dR.getOperation().equals("delete")){
-						currentAppts.remove(appt);
+						//currentAppts.remove(appt);  // can't remove while iterating
+						delAppts.add(appt);
 						// update calendar
 						for (Integer id:dR.getAppointment().getParticipants()) {
 							for (int j = dR.getAppointment().getStartIndex(); j < dR.getAppointment().getEndIndex(); j++) {
@@ -479,6 +481,10 @@ public class Node {
 						}
 						writeToLog(dR);
 					}
+				}
+				// now actually remove appointments from currentAppts
+				for (Appointment appt:delAppts){
+					currentAppts.remove(appt);
 				}
 				// check for events in NE that need to be inserted into currentAppts
 				for (EventRecord eR:NE){
@@ -491,8 +497,10 @@ public class Node {
 							//between start and end indices, for the given day
 							for (Integer id:eR.getAppointment().getParticipants()) {
 								for (int j = eR.getAppointment().getStartIndex(); j < eR.getAppointment().getEndIndex(); j++) {
-									if (this.calendars[id][eR.getAppointment().getDay().ordinal()][j] == 1)
+									if (this.calendars[id][eR.getAppointment().getDay().ordinal()][j] == 1){
+										// TODO conflict resolution should go here
 										System.out.println("You just scheduled over an existing appt");
+									}
 									this.calendars[id][eR.getAppointment().getDay().ordinal()][j] = 1;
 								}
 							}
@@ -516,13 +524,19 @@ public class Node {
 				}
 				
 				// updates to PL
+				HashSet<EventRecord> delPL = new HashSet<EventRecord>();
 				for (EventRecord eR:PL){
 					for (int j = 0; j < numNodes; j++){
 						if (hasRec(T, eR, j)){
-							PL.remove(eR);
+							//PL.remove(eR);
+							delPL.add(eR);
 						}
 					}
 				}
+				for (EventRecord eR:delPL){
+					PL.remove(eR);
+				}
+				
 				for (EventRecord eR:NE){
 					for (int j = 0; j < numNodes; j++){
 						if (!hasRec(T, eR, j)){
@@ -532,7 +546,7 @@ public class Node {
 				}
 				
 				saveNodeState();
-			}
+			}// end synchronize
 		}
 		
 	}
