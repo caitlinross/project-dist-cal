@@ -14,14 +14,3 @@ What still needs to be done:
 - test on AWS
 - write report of design and implementation
 
-
-
-maybe still needs to be done??
-- need to keep track of when processes are up/down (Caitlin)
-- keep queue of messages that have tried to send when process is down (Caitlin)
-    -- actually for last two, we might not need to do anything if the message can't be sent
-    those events should be sent at a later time because the sending node won't update it's info of the
-    crashed node until it receives a message from that node, so sending node will just try to send those 
-    events (and newer events) the next time it wants to send a message
-    -- I'm not completely convinced this is right though.
-
