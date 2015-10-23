@@ -378,7 +378,7 @@ public class Node {
 	}
 	
 	// creates NP, then sends <NP, T> to node k
-	public void send(Appointment appt, int k){
+	public void send(final Appointment appt, final int k){
 		// create NP to send
 		synchronized(lock){
 			for (EventRecord eR:PL){
@@ -414,7 +414,7 @@ public class Node {
                     public synchronized void run() {
                     	while (sendFail[k]){
 	                        try {
-								Thread.sleep(5000);
+								Thread.sleep(5000);  // TODO not sure how long we actually want to wait here before checking crashed process again
 								send(appt, k);
 							} catch (InterruptedException e) {
 								e.printStackTrace();
