@@ -106,18 +106,18 @@ public class Driver {
 				System.out.println("Please enter an appointment name\n");
 				name = in.nextLine();
 				System.out.println("Please enter the appointment day\n");
-				String tmpDay = in.nextLine();
-				if (tmpDay.equals("Sunday"))
+				String tmpDay = in.nextLine().toLowerCase();
+				if (tmpDay.equals("sunday") || tmpDay.equals("sun"))
 					day = Day.SUNDAY;
-				else if (tmpDay.equals("Monday"))
+				else if (tmpDay.equals("monday") || tmpDay.equals("mon"))
 					day = Day.MONDAY;
-				else if (tmpDay.equals("Tuesday"))
+				else if (tmpDay.equals("tuesday") || tmpDay.equals("tues"))
 					day = Day.TUESDAY;
-				else if (tmpDay.equals("Wednesday"))
+				else if (tmpDay.equals("wednesday") || tmpDay.equals("wed"))
 					day = Day.WEDNESDAY;
-				else if (tmpDay.equals("Thursday"))
+				else if (tmpDay.equals("thursday") || tmpDay.equals("thurs"))
 					day = Day.THURSDAY;
-				else if (tmpDay.equals("Friday"))
+				else if (tmpDay.equals("friday") || tmpDay.equals("fri"))
 					day = Day.FRIDAY;
 				else
 					day = Day.SATURDAY;
@@ -125,12 +125,12 @@ public class Driver {
 				start = in.nextInt();
 				in.nextLine();
 				System.out.println("AM or PM\n");
-				sAMPM = in.nextLine();
+				sAMPM = in.nextLine().toUpperCase();
 				System.out.println("Please enter an end time in HHMM format in 30 minute increments\n");
 				end = in.nextInt();
 				in.nextLine();
 				System.out.println("AM or PM\n");
-				eAMPM = in.nextLine();
+				eAMPM = in.nextLine().toUpperCase();
 				System.out.println("Please enter each participant; enter -1 when done\n");
 				int tmp = in.nextInt();
 				while (tmp != -1){

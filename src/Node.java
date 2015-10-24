@@ -103,7 +103,7 @@ public class Node {
 				}
 				time++;
 			}
-			newAppt = new Appointment(name, day, start, end, eAMPM, sAMPM, nodes);
+			newAppt = new Appointment(name, day, start, end, sAMPM, eAMPM, nodes);
 			insert(newAppt);
 		}
 		
