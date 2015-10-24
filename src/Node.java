@@ -650,12 +650,14 @@ public class Node {
 					// updates to PL
 					HashSet<EventRecord> delPL = new HashSet<EventRecord>();
 					for (EventRecord eR:PL){
+						boolean canDel = true;
 						for (int j = 0; j < numNodes; j++){
-							if (hasRec(T, eR, j)){
-								//PL.remove(eR);
-								delPL.add(eR);
+							if (!hasRec(T, eR, j)){
+								canDel = false;
 							}
 						}
+						if (canDel)
+							delPL.add(eR);
 					}
 					for (EventRecord eR:delPL){
 						PL.remove(eR);
