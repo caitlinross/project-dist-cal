@@ -240,7 +240,7 @@ public class Node {
 			
 			// line 1: c
 			synchronized(lock){
-				bw.write(this.c + "\n");
+				bw.write(this.c + "," + Appointment.getApptNo() + "\n");
 			}
 			
 			// then save the 2D calendar array for each node
@@ -348,6 +348,7 @@ public class Node {
 		    	String[] parts = text.split(",");
 		        if (lineNo == 0){ // restore node clock
 		        	this.c = Integer.parseInt(parts[0]);
+		        	Appointment.setApptNo(Integer.parseInt(parts[1]));
 		        }
 		        else if (lineNo > 0 && lineNo <= 7*numNodes ){ // restore calendar
 		        		int len = parts.length;

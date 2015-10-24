@@ -168,6 +168,14 @@ public class Appointment implements Serializable, Comparable<Appointment> {
 	public void setApptID(int apptID, int initNode) {
 		this.apptID = initNode + "_" + apptID;
 	}
+	
+	public static void setApptNo(int apptNo){
+		Appointment.apptNo = apptNo;
+	}
+	
+	public static int getApptNo(){
+		return Appointment.apptNo;
+	}
 
 	public static int convertTime(int time, String amPM){
 		int index = 0;
