@@ -120,36 +120,38 @@ public class Node {
 	}
 	
 	public void deleteOldAppointment(String name) {
-		for (EventRecord eR : PL){
-			//find corresponding appointment
-			if (eR.getAppointment().getName() == "name") {
-				synchronized(lock) {
-					Appointment delAppt = eR.getAppointment();
-					
-					//delete appointment
-					delete(delAppt);
-
-					//clear calendar
-					for (Integer id:delAppt.getParticipants()) {
-						for (int j = delAppt.getStartIndex(); j < delAppt.getEndIndex(); j++) {
-							this.calendars[id][delAppt.getDay().ordinal()][j] = 0;
+		Appointment delAppt = null;
+		synchronized(lock) {
+			for (Appointment appt:this.currentAppts){
+				//find corresponding appointment
+				if (appt.getName().equals(name)) {
+					delAppt = appt;
+				}
+			}
+			//delete appointment have to do outside iterating on currentAppts
+			// because delete() deletes from currentAppts collection
+			if (delAppt != null){
+				delete(delAppt);
+				
+				//clear calendar
+				for (Integer id:delAppt.getParticipants()) {
+					for (int j = delAppt.getStartIndex(); j < delAppt.getEndIndex(); j++) {
+						this.calendars[id][delAppt.getDay().ordinal()][j] = 0;
+					}
+				}
+				//if appt involves other nodes, send msgs
+				if (delAppt.getParticipants().size() > 1) {
+					for (Integer node:delAppt.getParticipants()) {
+						if (node != this.nodeId){
+							System.out.println("Send appt deletion to node " + node);
+							send(node);
 						}
 					}
-					//if appt involves other nodes, send msgs
-					if (delAppt.getParticipants().size() > 1) {
-						for (Integer node:delAppt.getParticipants()) {
-							if (node != this.nodeId){
-								System.out.println("Send appt deletion to node " + node);
-								send(node);
-							}
-						}
-					}
-
-					
 				}
 			}
 		}
 	}
+	
 	//print out the calendar to the terminal
 	public void printCalendar() {
 		//now have set of all appointments event records which are currently in calendar
@@ -463,7 +465,7 @@ public class Node {
 			socket.close();
 			sendFail[k] = false;
 		} 
-		catch (ConnectException ce){
+		catch (ConnectException | UnknownHostException ce){
 			// send to process k failed
 			if (!sendFail[k]){  // only start if this hasn't already started
 				sendFail[k] = true;
