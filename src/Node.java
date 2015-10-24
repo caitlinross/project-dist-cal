@@ -107,7 +107,7 @@ public class Node {
 				}
 				time++;
 			}
-			newAppt = new Appointment(name, day, start, end, sAMPM, eAMPM, nodes);
+			newAppt = new Appointment(name, day, start, end, sAMPM, eAMPM, nodes, this.nodeId);
 			insert(newAppt);
 		}
 		
@@ -124,12 +124,12 @@ public class Node {
 	}
 	
 	// deletes appointment based on given appointment ID
-	public void deleteOldAppointment(int apptID) {
+	public void deleteOldAppointment(String apptID) {
 		Appointment delAppt = null;
 		synchronized(lock) {
 			for (Appointment appt:this.currentAppts){
 				//find corresponding appointment
-				if (appt.getApptID() == apptID) {
+				if (appt.getApptID().equals(apptID)) {
 					delAppt = appt;
 				}
 			}
@@ -375,7 +375,7 @@ public class Node {
 		        	for (int i = 10; i < parts.length; i++)
 		        		list.add(Integer.parseInt(parts[i]));
 		        	Appointment appt = new Appointment(parts[3], Day.values()[Integer.parseInt(parts[4])], Integer.parseInt(parts[5]), Integer.parseInt(parts[6]), 
-		        			parts[7], parts[8], Integer.parseInt(parts[9]), list);
+		        			parts[7], parts[8], parts[9], list, this.nodeId);
 		        	EventRecord eR = new EventRecord(parts[0], Integer.parseInt(parts[1]), Integer.parseInt(parts[2]), appt);
 		        	NP.add(eR);
 		        	
@@ -389,7 +389,7 @@ public class Node {
 		        	for (int i = 10; i < parts.length; i++)
 		        		list.add(Integer.parseInt(parts[i]));
 		        	Appointment appt = new Appointment(parts[3], Day.values()[Integer.parseInt(parts[4])], Integer.parseInt(parts[5]), Integer.parseInt(parts[6]), 
-		        			parts[7], parts[8], Integer.parseInt(parts[9]), list);
+		        			parts[7], parts[8], parts[9], list, this.nodeId);
 		        	EventRecord eR = new EventRecord(parts[0], Integer.parseInt(parts[1]), Integer.parseInt(parts[2]), appt);
 		        	PL.add(eR);
 		        }
@@ -402,7 +402,7 @@ public class Node {
 		        	for (int i = 10; i < parts.length; i++)
 		        		list.add(Integer.parseInt(parts[i]));
 		        	Appointment appt = new Appointment(parts[3], Day.values()[Integer.parseInt(parts[4])], Integer.parseInt(parts[5]), Integer.parseInt(parts[6]), 
-		        			parts[7], parts[8], Integer.parseInt(parts[9]), list);
+		        			parts[7], parts[8], parts[9], list, this.nodeId);
 		        	EventRecord eR = new EventRecord(parts[0], Integer.parseInt(parts[1]), Integer.parseInt(parts[2]), appt);
 		        	NE.add(eR);
 		        }
@@ -415,7 +415,7 @@ public class Node {
 		        	for (int i = 7; i < parts.length; i++)
 		        		list.add(Integer.parseInt(parts[i]));
 		        	Appointment appt = new Appointment(parts[0], Day.values()[Integer.parseInt(parts[1])], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), 
-		        			parts[4], parts[5], Integer.parseInt(parts[6]), list);
+		        			parts[4], parts[5], parts[6], list, this.nodeId);
 		        	currentAppts.add(appt);
 		        }
 		        lineNo++;

@@ -17,7 +17,8 @@ public class Appointment implements Serializable, Comparable<Appointment> {
 	private String sAMPM;
 	private String eAMPM;
 	private ArrayList<Integer> participants;
-	private int apptID; // unique id for each appointment
+	private int initNode;
+	private String apptID; // unique id for each appointment
 	private static int apptNo = 0;
 	
 	// use these indices in the calendar arrays
@@ -26,7 +27,7 @@ public class Appointment implements Serializable, Comparable<Appointment> {
 	
 	
 	
-	public Appointment(String name, Day day, int start, int end, String sAMPM, String eAMPM, ArrayList<Integer> participants) {
+	public Appointment(String name, Day day, int start, int end, String sAMPM, String eAMPM, ArrayList<Integer> participants, int initNode) {
 		this.name = name;
 		this.day = day;
 		this.start = start;
@@ -36,11 +37,12 @@ public class Appointment implements Serializable, Comparable<Appointment> {
 		this.participants = participants;
 		this.setStartIndex(convertTime(start, sAMPM));
 		this.setEndIndex(convertTime(end, eAMPM));
-		this.setApptID(Appointment.apptNo);
+		this.initNode = initNode;
+		this.setApptID(Appointment.apptNo, this.initNode);
 		Appointment.apptNo++;
 	}
 	
-	public Appointment(String name, Day day, int start, int end, String sAMPM, String eAMPM, int apptID, ArrayList<Integer> participants) {
+	public Appointment(String name, Day day, int start, int end, String sAMPM, String eAMPM, String apptID, ArrayList<Integer> participants, int initNode) {
 		this.name = name;
 		this.day = day;
 		this.start = start;
@@ -50,7 +52,7 @@ public class Appointment implements Serializable, Comparable<Appointment> {
 		this.participants = participants;
 		this.setStartIndex(convertTime(start, sAMPM));
 		this.setEndIndex(convertTime(end, eAMPM));
-		this.setApptID(apptID);
+		this.apptID = apptID;
 	}
 	
 	public int compareTo(Appointment otherAppt) {
@@ -156,15 +158,15 @@ public class Appointment implements Serializable, Comparable<Appointment> {
 	/**
 	 * @return the apptID
 	 */
-	public int getApptID() {
+	public String getApptID() {
 		return apptID;
 	}
 
 	/**
 	 * @param apptID the apptID to set
 	 */
-	public void setApptID(int apptID) {
-		this.apptID = apptID;
+	public void setApptID(int apptID, int initNode) {
+		this.apptID = initNode + "_" + apptID;
 	}
 
 	public static int convertTime(int time, String amPM){

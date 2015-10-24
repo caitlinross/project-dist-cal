@@ -143,7 +143,7 @@ public class Driver {
 			}
 			else if (action.equals("delete")) {
 				System.out.println("Please enter the ID number of the appointment (print current appointments to show ID number)\n");
-				int apptId = in.nextInt();
+				String apptId = in.nextLine();
 				node.deleteOldAppointment(apptId);
 				
 			}
