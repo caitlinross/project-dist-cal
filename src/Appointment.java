@@ -17,6 +17,8 @@ public class Appointment implements Serializable, Comparable<Appointment> {
 	private String sAMPM;
 	private String eAMPM;
 	private ArrayList<Integer> participants;
+	private int apptID; // unique id for each appointment
+	private static int apptNo = 0;
 	
 	// use these indices in the calendar arrays
 	private int startIndex;
@@ -34,6 +36,21 @@ public class Appointment implements Serializable, Comparable<Appointment> {
 		this.participants = participants;
 		this.setStartIndex(convertTime(start, sAMPM));
 		this.setEndIndex(convertTime(end, eAMPM));
+		this.setApptID(Appointment.apptNo);
+		Appointment.apptNo++;
+	}
+	
+	public Appointment(String name, Day day, int start, int end, String sAMPM, String eAMPM, int apptID, ArrayList<Integer> participants) {
+		this.name = name;
+		this.day = day;
+		this.start = start;
+		this.end = end;
+		this.setsAMPM(sAMPM);
+		this.seteAMPM(eAMPM);
+		this.participants = participants;
+		this.setStartIndex(convertTime(start, sAMPM));
+		this.setEndIndex(convertTime(end, eAMPM));
+		this.setApptID(apptID);
 	}
 	
 	public int compareTo(Appointment otherAppt) {
@@ -134,6 +151,20 @@ public class Appointment implements Serializable, Comparable<Appointment> {
 	 */
 	public void seteAMPM(String eAMPM) {
 		this.eAMPM = eAMPM;
+	}
+
+	/**
+	 * @return the apptID
+	 */
+	public int getApptID() {
+		return apptID;
+	}
+
+	/**
+	 * @param apptID the apptID to set
+	 */
+	public void setApptID(int apptID) {
+		this.apptID = apptID;
 	}
 
 	public static int convertTime(int time, String amPM){

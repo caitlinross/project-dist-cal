@@ -119,12 +119,13 @@ public class Node {
 		
 	}
 	
-	public void deleteOldAppointment(String name) {
+	// deletes appointment based on given appointment ID
+	public void deleteOldAppointment(int apptID) {
 		Appointment delAppt = null;
 		synchronized(lock) {
 			for (Appointment appt:this.currentAppts){
 				//find corresponding appointment
-				if (appt.getName().equals(name)) {
+				if (appt.getApptID() == apptID) {
 					delAppt = appt;
 				}
 			}
@@ -178,6 +179,7 @@ public class Node {
 			for (int j = 0; j < apptList.size(); j++) {
 				Appointment a = apptList.get(j);
 				System.out.println("Appointment name: " + a.getName());
+				System.out.println("Appointment ID: " + a.getApptID());
 				String partic = "";
 				for (int k = 0; k<a.getParticipants().size(); k++) {
 					partic = partic.concat(String.valueOf(a.getParticipants().get(k)));
@@ -210,6 +212,7 @@ public class Node {
 				bw.write("added to ");
 			bw.write("dictionary\n");
 			bw.write("Appointment name: " + eR.getAppointment().getName() + "\n");
+			bw.write("Appointment id: " + eR.getAppointment().getApptID() + "\n");
 			bw.write("Day: " + eR.getAppointment().getDay() + "\n");
 			bw.write("Start time: " + eR.getAppointment().getStart() + "\n");
 			bw.write("End time: " + eR.getAppointment().getEnd() + "\n");
@@ -264,13 +267,14 @@ public class Node {
 			}
 			
 			// save events in NP, PL, NE, currentAppts in following format:
-			// operation, time, nodeID, appt name, day, start, end, sAMPM, eAMPM, participants
+			// operation, time, nodeID, appt name, day, start, end, sAMPM, eAMPM, apptID, participants
 			// for days, use ordinals of enums,
 			synchronized(lock){
 				bw.write("NP," + NP.size() + "\n");
 				for (EventRecord eR:NP){
 					bw.write(eR.getOperation() + "," + eR.getTime() + "," + eR.getNodeId() + "," + eR.getAppointment().getName() + "," + eR.getAppointment().getDay().ordinal() + ","
-							+ eR.getAppointment().getStart() + "," + eR.getAppointment().getEnd() + "," + eR.getAppointment().getsAMPM() + "," + eR.getAppointment().geteAMPM() + ",");
+							+ eR.getAppointment().getStart() + "," + eR.getAppointment().getEnd() + "," + eR.getAppointment().getsAMPM() + "," + eR.getAppointment().geteAMPM() + "," 
+							+ eR.getAppointment().getApptID() + ",");
 					for (int i = 0; i < eR.getAppointment().getParticipants().size(); i++){
 						bw.write(Integer.toString(eR.getAppointment().getParticipants().get(i)));
 						if (i != eR.getAppointment().getParticipants().size() - 1)
@@ -282,7 +286,8 @@ public class Node {
 				bw.write("PL," + PL.size() + "\n");
 				for (EventRecord eR:PL){
 					bw.write(eR.getOperation() + "," + eR.getTime() + "," + eR.getNodeId() + "," + eR.getAppointment().getName() + "," + eR.getAppointment().getDay().ordinal() + ","
-							+ eR.getAppointment().getStart() + "," + eR.getAppointment().getEnd() + "," + eR.getAppointment().getsAMPM() + "," + eR.getAppointment().geteAMPM() + ",");
+							+ eR.getAppointment().getStart() + "," + eR.getAppointment().getEnd() + "," + eR.getAppointment().getsAMPM() + "," + eR.getAppointment().geteAMPM() + ","
+							+ eR.getAppointment().getApptID() + ",");
 					for (int i = 0; i < eR.getAppointment().getParticipants().size(); i++){
 						bw.write(Integer.toString(eR.getAppointment().getParticipants().get(i)));
 						if (i != eR.getAppointment().getParticipants().size() - 1)
@@ -294,7 +299,8 @@ public class Node {
 				bw.write("NE," + NE.size() + "\n");
 				for (EventRecord eR:NE){
 					bw.write(eR.getOperation() + "," + eR.getTime() + "," + eR.getNodeId() + "," + eR.getAppointment().getName() + "," + eR.getAppointment().getDay().ordinal() + ","
-							+ eR.getAppointment().getStart() + "," + eR.getAppointment().getEnd() + "," + eR.getAppointment().getsAMPM() + "," + eR.getAppointment().geteAMPM() + ",");
+							+ eR.getAppointment().getStart() + "," + eR.getAppointment().getEnd() + "," + eR.getAppointment().getsAMPM() + "," + eR.getAppointment().geteAMPM() + ","
+							+ eR.getAppointment().getApptID() + ",");
 					for (int i = 0; i < eR.getAppointment().getParticipants().size(); i++){
 						bw.write(Integer.toString(eR.getAppointment().getParticipants().get(i)));
 						if (i != eR.getAppointment().getParticipants().size() - 1)
@@ -305,7 +311,8 @@ public class Node {
 				
 				bw.write("current," + currentAppts.size() + "\n");
 				for (Appointment appt:currentAppts){
-					bw.write(appt.getName() + "," + appt.getDay().ordinal() + "," + appt.getStart() + "," + appt.getEnd() + "," + appt.getsAMPM() + "," + appt.geteAMPM() + ",");
+					bw.write(appt.getName() + "," + appt.getDay().ordinal() + "," + appt.getStart() + "," + appt.getEnd() + "," + appt.getsAMPM() + "," + appt.geteAMPM() + ","
+							+ appt.getApptID() + ",");
 					for (int i = 0; i < appt.getParticipants().size(); i++){
 						bw.write(Integer.toString(appt.getParticipants().get(i)));
 						if (i != appt.getParticipants().size() - 1)
@@ -361,10 +368,10 @@ public class Node {
 		        }
 		        else if (lineNo > tLimit + 1 && lineNo <= npLimit && numNP > 0){ // Restore NP's hashset
 		        	ArrayList<Integer> list = new ArrayList<Integer>();
-		        	for (int i = 9; i < parts.length; i++)
+		        	for (int i = 10; i < parts.length; i++)
 		        		list.add(Integer.parseInt(parts[i]));
 		        	Appointment appt = new Appointment(parts[3], Day.values()[Integer.parseInt(parts[4])], Integer.parseInt(parts[5]), Integer.parseInt(parts[6]), 
-		        			parts[7], parts[8], list);
+		        			parts[7], parts[8], Integer.parseInt(parts[9]), list);
 		        	EventRecord eR = new EventRecord(parts[0], Integer.parseInt(parts[1]), Integer.parseInt(parts[2]), appt);
 		        	NP.add(eR);
 		        	
@@ -375,10 +382,10 @@ public class Node {
 		        }
 		        else if (lineNo > npLimit + 1 && lineNo <= plLimit && numPL > 0){
 		        	ArrayList<Integer> list = new ArrayList<Integer>();
-		        	for (int i = 9; i < parts.length; i++)
+		        	for (int i = 10; i < parts.length; i++)
 		        		list.add(Integer.parseInt(parts[i]));
 		        	Appointment appt = new Appointment(parts[3], Day.values()[Integer.parseInt(parts[4])], Integer.parseInt(parts[5]), Integer.parseInt(parts[6]), 
-		        			parts[7], parts[8], list);
+		        			parts[7], parts[8], Integer.parseInt(parts[9]), list);
 		        	EventRecord eR = new EventRecord(parts[0], Integer.parseInt(parts[1]), Integer.parseInt(parts[2]), appt);
 		        	PL.add(eR);
 		        }
@@ -388,10 +395,10 @@ public class Node {
 		        }
 		        else if (lineNo > plLimit + 1 && lineNo <=  neLimit && numNE > 0){
 		        	ArrayList<Integer> list = new ArrayList<Integer>();
-		        	for (int i = 9; i < parts.length; i++)
+		        	for (int i = 10; i < parts.length; i++)
 		        		list.add(Integer.parseInt(parts[i]));
 		        	Appointment appt = new Appointment(parts[3], Day.values()[Integer.parseInt(parts[4])], Integer.parseInt(parts[5]), Integer.parseInt(parts[6]), 
-		        			parts[7], parts[8], list);
+		        			parts[7], parts[8], Integer.parseInt(parts[9]), list);
 		        	EventRecord eR = new EventRecord(parts[0], Integer.parseInt(parts[1]), Integer.parseInt(parts[2]), appt);
 		        	NE.add(eR);
 		        }
@@ -401,10 +408,10 @@ public class Node {
 		        }
 		        else if (lineNo > neLimit + 1 && lineNo <= apptLimit && numAppt > 0){
 		        	ArrayList<Integer> list = new ArrayList<Integer>();
-		        	for (int i = 6; i < parts.length; i++)
+		        	for (int i = 7; i < parts.length; i++)
 		        		list.add(Integer.parseInt(parts[i]));
 		        	Appointment appt = new Appointment(parts[0], Day.values()[Integer.parseInt(parts[1])], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), 
-		        			parts[4], parts[5], list);
+		        			parts[4], parts[5], Integer.parseInt(parts[6]), list);
 		        	currentAppts.add(appt);
 		        }
 		        lineNo++;
@@ -438,7 +445,14 @@ public class Node {
 		writeToLog(eR);
 		synchronized(lock){
 			PL.add(eR);
-			currentAppts.remove(appt);
+			Appointment delAppt = null;
+			for (Appointment a:currentAppts){
+				if (a.getApptID() == appt.getApptID()){
+					delAppt = a;
+				}
+			}
+			if (delAppt != null)
+				currentAppts.remove(delAppt);
 			saveNodeState();
 		}
 	}
@@ -576,9 +590,6 @@ public class Node {
 							writeToLog(eR);
 							EventRecord dR = containsAppointment(NE, eR.getAppointment());
 							if (dR == null){ // there's no 'delete()' for this appointment so add to currentAppts
-								// check for conflicts
-								// if none, update calendar time slot to 1 for each node in appt list, for each time slot 
-								// between start and end indices, for the given day
 								// first check to see if the appointment conflicts with my schedule
 								// then go through other nodes calendars and handle appropriately
 								if (eR.getAppointment().getParticipants().contains(this.nodeId)){

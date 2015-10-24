@@ -142,9 +142,9 @@ public class Driver {
 				node.createNewAppointment(participants, name, day, start, end, sAMPM, eAMPM);
 			}
 			else if (action.equals("delete")) {
-				System.out.println("Please enter the name of the appointment\n");
-				name = in.nextLine();
-				node.deleteOldAppointment(name);
+				System.out.println("Please enter the ID number of the appointment (print current appointments to show ID number)\n");
+				int apptId = in.nextInt();
+				node.deleteOldAppointment(apptId);
 				
 			}
 			else if (action.equals("print")) {
