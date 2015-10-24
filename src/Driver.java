@@ -153,6 +153,18 @@ public class Driver {
 			else {
 				System.out.println("Action not recognized, please enter 'add', 'delete', or 'print'\n");
 			}
+			
+			// before asking for next decision, report any appointments that weren't able to be scheduled
+			if (node.isCantSched()){
+				for (Appointment a:node.getBadAppts()){
+					System.out.println("Can't schedule appointment ID: " + a.getApptID());
+					System.out.println("Name: " + a.getName());
+					System.out.println("time: " + a.getStart() + a.getsAMPM() + " - " + a.getEnd() + a.geteAMPM());
+					
+				}
+				node.resetBadAppts();
+				node.setCantSched(false);
+			}
 		}
 	}
 	

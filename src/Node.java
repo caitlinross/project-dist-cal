@@ -25,6 +25,8 @@ public class Node {
 	private int T[][];
 	private int c;
 	private boolean sendFail[];
+	private boolean cantSched;
+	private Set<Appointment> badAppts;
 	
 	/**
 	 * @param totalNodes
@@ -46,12 +48,14 @@ public class Node {
 		this.NE = new HashSet<EventRecord>();
 		this.NP = new HashSet<EventRecord>();
 		this.currentAppts = new HashSet<Appointment>();  // dictionary
+		this.badAppts = new HashSet<Appointment>();
 		this.T = new int[totalNodes][totalNodes];
 		this.c = 0;
 		this.sendFail = new boolean[this.numNodes];
 		for (int i = 0; i < sendFail.length; i++){
 			sendFail[i] = false;
 		}
+		this.setCantSched(false);
 		
 		// recover node state if this is restarting from crash
 		if (recovery)
@@ -670,6 +674,11 @@ public class Node {
 			}
 		}
 		else { // received appointment to be cancelled because of conflict
+			synchronized(lock){
+				this.setCantSched(true);
+				if (cancelAppt != null)
+					badAppts.add(cancelAppt);
+			}
 			if (cancelAppt != null)
 				delete(cancelAppt);
 		}
@@ -727,6 +736,28 @@ public class Node {
 				return eR;
 		}
 		return null;
+	}
+
+	/**
+	 * @return the cantSched
+	 */
+	public boolean isCantSched() {
+		return cantSched;
+	}
+
+	/**
+	 * @param cantSched the cantSched to set
+	 */
+	public void setCantSched(boolean cantSched) {
+		this.cantSched = cantSched;
+	}
+	
+	public Set<Appointment> getBadAppts(){
+		return badAppts;
+	}
+	
+	public void resetBadAppts(){
+		badAppts.clear();
 	}
 
 
