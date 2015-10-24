@@ -576,18 +576,40 @@ public class Node {
 							writeToLog(eR);
 							EventRecord dR = containsAppointment(NE, eR.getAppointment());
 							if (dR == null){ // there's no 'delete()' for this appointment so add to currentAppts
-								currentAppts.add(eR.getAppointment());
-								//update calendar time slot to 1 for each node in appt list, for each time slot 
-								//between start and end indices, for the given day
-								for (Integer id:eR.getAppointment().getParticipants()) {
+								// check for conflicts
+								// if none, update calendar time slot to 1 for each node in appt list, for each time slot 
+								// between start and end indices, for the given day
+								// first check to see if the appointment conflicts with my schedule
+								// then go through other nodes calendars and handle appropriately
+								if (eR.getAppointment().getParticipants().contains(this.nodeId)){
+									boolean conflict = false;
 									for (int j = eR.getAppointment().getStartIndex(); j < eR.getAppointment().getEndIndex(); j++) {
-										if (this.calendars[id][eR.getAppointment().getDay().ordinal()][j] == 1){
-											// TODO conflict resolution should go here
-											System.out.println("Trying to schedule conflicting appointment");
-											sendCancellationMsg(eR.getAppointment(), k);
+										if (this.calendars[this.nodeId][eR.getAppointment().getDay().ordinal()][j] == 1){
+											conflict = true;
 										}
-										else
+									}
+									if (conflict){
+										System.out.println("Trying to schedule conflicting appointment");
+										sendCancellationMsg(eR.getAppointment(), k);
+									}
+									else {
+										currentAppts.add(eR.getAppointment());
+										// update my view of all participants calendars
+										for (Integer id:eR.getAppointment().getParticipants()) {
+											for (int j = eR.getAppointment().getStartIndex(); j < eR.getAppointment().getEndIndex(); j++) {
+												this.calendars[id][eR.getAppointment().getDay().ordinal()][j] = 1;
+											}
+										}
+									}
+								}
+								else {  // this node isn't a participant, shouldn't need to check for conflict 
+									// checking for conflicts is left up to participants of an appointment
+									currentAppts.add(eR.getAppointment());
+									// update my view of all participants calendars
+									for (Integer id:eR.getAppointment().getParticipants()) {
+										for (int j = eR.getAppointment().getStartIndex(); j < eR.getAppointment().getEndIndex(); j++) {
 											this.calendars[id][eR.getAppointment().getDay().ordinal()][j] = 1;
+										}
 									}
 								}
 								
@@ -644,7 +666,7 @@ public class Node {
 	}
 	
 	// send a message to node k that this appointment conflicts with previously scheduled node
-	public void sendCancellationMsg(Appointment appt, int k){
+	public void sendCancellationMsg(Appointment appt, final int k){
 		try {
 			Socket socket = new Socket(hostNames[k], port);
 			OutputStream out = socket.getOutputStream();
