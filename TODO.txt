@@ -9,8 +9,6 @@ Very simple UI set up for creating appointments
 
 What still needs to be done:
 - appointment conflict resolution (Caitlin)
-- add in appointment cancellation (in UI) (Erika)
-- add in view appointments feature to UI (Erika)
 - test on AWS
 - write report of design and implementation
 

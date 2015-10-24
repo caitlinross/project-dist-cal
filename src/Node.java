@@ -152,6 +152,16 @@ public class Node {
 		}
 	}
 	
+	// deletes a conflicting appointment from self and sends messages to any other necessary nodes
+	public void deleteOldAppointment(Appointment appt, int notifyingNode) {
+		delete(appt);
+		for (Integer node:appt.getParticipants()){
+			if (node != notifyingNode && node != this.nodeId){
+				sendCancellationMsg(appt, node);
+			}
+		}
+	}
+	
 	//print out the calendar to the terminal
 	public void printCalendar() {
 		//now have set of all appointments event records which are currently in calendar
@@ -455,6 +465,7 @@ public class Node {
 			Socket socket = new Socket(hostNames[k], port);
 			OutputStream out = socket.getOutputStream();
 			ObjectOutputStream objectOutput = new ObjectOutputStream(out);
+			objectOutput.writeInt(0);  // 0 means sending set of events
 			synchronized(lock){
 				objectOutput.writeObject(NP);
 				objectOutput.writeObject(T);
@@ -499,13 +510,24 @@ public class Node {
 		Set<EventRecord> NPk = null;
 		int Tk[][] = null;
 		int k = -1;
+		Appointment cancelAppt = null;
+		boolean cancellation = false;
 
 		try {
 			// get the objects from the message
 			InputStream in = clientSocket.getInputStream();
 			ObjectInputStream objectInput = new ObjectInputStream(in);
-			NPk = (HashSet<EventRecord>)objectInput.readObject();
-			Tk = (int[][])objectInput.readObject();
+			int cancel = objectInput.readInt();
+			if (cancel == 0){
+				cancellation = false;
+				NPk = (HashSet<EventRecord>)objectInput.readObject();
+				Tk = (int[][])objectInput.readObject();
+			}
+			else{
+				// TODO get objects in case of cancellation message
+				cancellation = true;
+				cancelAppt = (Appointment)objectInput.readObject();
+			}
 			k = objectInput.readInt();
 			objectInput.close();
 			in.close();
@@ -516,101 +538,152 @@ public class Node {
 			e.printStackTrace();
 		} 
 		
-		// handle the appointment
-		if (NPk != null){
-			synchronized(lock){
-				// update NE
-				for (EventRecord fR:NPk){
-					if (!hasRec(T, fR, nodeId)){
-						NE.add(fR);
-					}
-				}
-				
-				// update the dictionary and calendar and log
-				// check for appts in currentAppts that need to be deleted
-				HashSet<Appointment> delAppts = new HashSet<Appointment>();
-				for (Appointment appt:currentAppts){
-					EventRecord dR = containsAppointment(NE, appt);
-					if (dR != null && dR.getOperation().equals("delete")){
-						//currentAppts.remove(appt);  // can't remove while iterating
-						delAppts.add(appt);
-						// update calendar
-						for (Integer id:dR.getAppointment().getParticipants()) {
-							for (int j = dR.getAppointment().getStartIndex(); j < dR.getAppointment().getEndIndex(); j++) {
-								this.calendars[id][dR.getAppointment().getDay().ordinal()][j] = 0;
-							}
+		if (!cancellation){
+			// handle the appointments received
+			if (NPk != null){
+				synchronized(lock){
+					// update NE
+					for (EventRecord fR:NPk){
+						if (!hasRec(T, fR, nodeId)){
+							NE.add(fR);
 						}
-						writeToLog(dR);
 					}
-				}
-				// now actually remove appointments from currentAppts
-				for (Appointment appt:delAppts){
-					currentAppts.remove(appt);
-				}
-				// check for events in NE that need to be inserted into currentAppts
-				for (EventRecord eR:NE){
-					if (eR.getOperation().equals("insert")){
-						writeToLog(eR);
-						EventRecord dR = containsAppointment(NE, eR.getAppointment());
-						if (dR == null){ // there's no 'delete()' for this appointment so add to currentAppts
-							currentAppts.add(eR.getAppointment());
-							//update calendar time slot to 1 for each node in appt list, for each time slot 
-							//between start and end indices, for the given day
-							for (Integer id:eR.getAppointment().getParticipants()) {
-								for (int j = eR.getAppointment().getStartIndex(); j < eR.getAppointment().getEndIndex(); j++) {
-									if (this.calendars[id][eR.getAppointment().getDay().ordinal()][j] == 1){
-										// TODO conflict resolution should go here
-										System.out.println("You just scheduled over an existing appt");
-									}
-									this.calendars[id][eR.getAppointment().getDay().ordinal()][j] = 1;
+					
+					// update the dictionary and calendar and log
+					// check for appts in currentAppts that need to be deleted
+					HashSet<Appointment> delAppts = new HashSet<Appointment>();
+					for (Appointment appt:currentAppts){
+						EventRecord dR = containsAppointment(NE, appt);
+						if (dR != null && dR.getOperation().equals("delete")){
+							//currentAppts.remove(appt);  // can't remove while iterating
+							delAppts.add(appt);
+							// update calendar
+							for (Integer id:dR.getAppointment().getParticipants()) {
+								for (int j = dR.getAppointment().getStartIndex(); j < dR.getAppointment().getEndIndex(); j++) {
+									this.calendars[id][dR.getAppointment().getDay().ordinal()][j] = 0;
 								}
+							}
+							writeToLog(dR);
+						}
+					}
+					// now actually remove appointments from currentAppts
+					for (Appointment appt:delAppts){
+						currentAppts.remove(appt);
+					}
+					// check for events in NE that need to be inserted into currentAppts
+					for (EventRecord eR:NE){
+						if (eR.getOperation().equals("insert")){
+							writeToLog(eR);
+							EventRecord dR = containsAppointment(NE, eR.getAppointment());
+							if (dR == null){ // there's no 'delete()' for this appointment so add to currentAppts
+								currentAppts.add(eR.getAppointment());
+								//update calendar time slot to 1 for each node in appt list, for each time slot 
+								//between start and end indices, for the given day
+								for (Integer id:eR.getAppointment().getParticipants()) {
+									for (int j = eR.getAppointment().getStartIndex(); j < eR.getAppointment().getEndIndex(); j++) {
+										if (this.calendars[id][eR.getAppointment().getDay().ordinal()][j] == 1){
+											// TODO conflict resolution should go here
+											System.out.println("Trying to schedule conflicting appointment");
+											sendCancellationMsg(eR.getAppointment(), k);
+										}
+										else
+											this.calendars[id][eR.getAppointment().getDay().ordinal()][j] = 1;
+									}
+								}
+								
+							}
+							else {  // received an insert() and delete() for same appointment
+								writeToLog(dR);
 							}
 							
 						}
-						else {  // received an insert() and delete() for same appointment
-							writeToLog(dR);
-						}
-						
 					}
-				}
-				
-				// update T
-				for (int i = 0; i < numNodes; i++){
-					T[nodeId][i] = Math.max(T[nodeId][i], Tk[k][i]);
-				}
-				for (int i = 0; i < numNodes; i++){
-					for (int j = 0; j < numNodes; j++){
-						T[i][j] = Math.max(T[i][j], Tk[i][j]);
+					
+					// update T
+					for (int i = 0; i < numNodes; i++){
+						T[nodeId][i] = Math.max(T[nodeId][i], Tk[k][i]);
 					}
-				}
-				
-				// updates to PL
-				HashSet<EventRecord> delPL = new HashSet<EventRecord>();
-				for (EventRecord eR:PL){
-					for (int j = 0; j < numNodes; j++){
-						if (hasRec(T, eR, j)){
-							//PL.remove(eR);
-							delPL.add(eR);
+					for (int i = 0; i < numNodes; i++){
+						for (int j = 0; j < numNodes; j++){
+							T[i][j] = Math.max(T[i][j], Tk[i][j]);
 						}
 					}
-				}
-				for (EventRecord eR:delPL){
-					PL.remove(eR);
-				}
-				
-				for (EventRecord eR:NE){
-					for (int j = 0; j < numNodes; j++){
-						if (!hasRec(T, eR, j)){
-							PL.add(eR);
+					
+					// updates to PL
+					HashSet<EventRecord> delPL = new HashSet<EventRecord>();
+					for (EventRecord eR:PL){
+						for (int j = 0; j < numNodes; j++){
+							if (hasRec(T, eR, j)){
+								//PL.remove(eR);
+								delPL.add(eR);
+							}
 						}
 					}
-				}
-				
-				saveNodeState();
-
-			}// end synchronize
+					for (EventRecord eR:delPL){
+						PL.remove(eR);
+					}
+					
+					for (EventRecord eR:NE){
+						for (int j = 0; j < numNodes; j++){
+							if (!hasRec(T, eR, j)){
+								PL.add(eR);
+							}
+						}
+					}
+					
+					saveNodeState();
+	
+				}// end synchronize
+			}
+		}
+		else { // received appointment to be cancelled because of conflict
+			if (cancelAppt != null)
+				delete(cancelAppt);
 		}
 		
+	}
+	
+	// send a message to node k that this appointment conflicts with previously scheduled node
+	public void sendCancellationMsg(Appointment appt, int k){
+		try {
+			Socket socket = new Socket(hostNames[k], port);
+			OutputStream out = socket.getOutputStream();
+			ObjectOutputStream objectOutput = new ObjectOutputStream(out);
+			objectOutput.writeInt(1);  // 1 means sending specific appointment to be canceled
+			synchronized(lock){
+				objectOutput.writeObject(appt);
+				//objectOutput.writeObject(T);
+			}
+			objectOutput.writeInt(nodeId);
+			objectOutput.close();
+			out.close();
+			socket.close();
+			sendFail[k] = false;
+		} 
+		catch (ConnectException | UnknownHostException ce){
+			// send to process k failed
+			if (!sendFail[k]){  // only start if this hasn't already started
+				sendFail[k] = true;
+			
+				// start a thread that periodically checks for k to recover and send again
+				Runnable runnable = new Runnable() {
+                    public synchronized void run() {
+                    	while (sendFail[k]){
+	                        try {
+								Thread.sleep(5000);  // TODO not sure how long we actually want to wait here before checking crashed process again
+								send(k);
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+                    	}
+                    }
+                };
+                new Thread(runnable).start();
+			}
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	// determine if a given appointment is the same as one in an EventRecord
