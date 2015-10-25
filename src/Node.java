@@ -29,11 +29,23 @@ public class Node {
 	private Set<Appointment> badAppts;
 	
 	/**
-	 * @param totalNodes
-	 * @param port
-	 * @param hostNames
-	 * @param nodeID
-	 * @param recovery
+	 * @param totalNodes number of nodes being used
+	 * @param port port to use for connections
+	 * @param hostNames hostnames for all nodes
+	 * @param nodeID this nodes id number
+	 * @param recovery is this a recovery startup?
+	 * @param logName the file name for the log
+	 * @param stateLog the file name for saving the node state
+	 * @param calendars stores a 0 or 1 for each time period to represent appointment or free
+	 * @param PL from W&B alg
+	 * @param NE from W&B alg
+	 * @param NP from W&B alg
+	 * @param currentAppts appointments that are scheduled; only good appointments (At least as far as this node knows so far)
+	 * @param badAppts conflicting appointments that need to be reported to the creating node
+	 * @param T matrix from W&B alg
+	 * @param c clock for this node
+	 * @param sendFail for keeping track of whether we were able to send to nodes or not (if they crashed)
+	 * @param cantSched flag for determing if there has been some conflicting appointments
 	 */
 	public Node(int totalNodes, int port, String[] hostNames, int nodeID, boolean recovery) {
 		this.logName = "appointments.log";
@@ -77,6 +89,16 @@ public class Node {
 		return calendars;
 	}
 	
+	/**
+	 * 
+	 * @param nodes participants in the new appointment
+	 * @param name name of appointment
+	 * @param day day of appointment
+	 * @param start start time of appointment
+	 * @param end end time of appointment
+	 * @param sAMPM am or pm for start time?
+	 * @param eAMPM am or pm for end time?
+	 */
 	public void createNewAppointment(ArrayList<Integer> nodes, String name, Day day, int start, int end, String sAMPM, String eAMPM){
 		Appointment newAppt = null;
 		int startIndex = Appointment.convertTime(start, sAMPM);
@@ -123,7 +145,10 @@ public class Node {
 		
 	}
 	
-	// deletes appointment based on given appointment ID
+	/**
+	 *  deletes appointment based on given appointment ID
+	 * @param apptID id for the appointment to be deleted
+	 */
 	public void deleteOldAppointment(String apptID) {
 		Appointment delAppt = null;
 		synchronized(lock) {
@@ -157,7 +182,11 @@ public class Node {
 		}
 	}
 	
-	// deletes a conflicting appointment from self and sends messages to any other necessary nodes
+	/**
+	 *  deletes a conflicting appointment from self and sends messages to any other necessary nodes
+	 * @param appt appointment to be deleted
+	 * @param notifyingNode the node that notified about the conflict
+	 */
 	public void deleteOldAppointment(Appointment appt, int notifyingNode) {
 		delete(appt);
 		for (Integer node:appt.getParticipants()){
@@ -167,7 +196,9 @@ public class Node {
 		}
 	}
 	
-	//print out the calendar to the terminal
+	/**
+	 * print out the calendar to the terminal
+	 */
 	public void printCalendar() {
 		//now have set of all appointments event records which are currently in calendar
 		//next: get eRs by day, and print them
@@ -202,7 +233,10 @@ public class Node {
 	}
 	
 	
-	// write an event to the log
+	/**
+	 *  write an event to the log
+	 * @param eR the event record to write to log
+	 */
 	public void writeToLog(EventRecord eR){
 		try{
 			FileWriter fw = new FileWriter(this.logName, true);
@@ -234,7 +268,9 @@ public class Node {
 		}
 	}
 	
-	// save state of system for recovering from crash
+	/**
+	 *  save state of system for recovering from crash
+	 */
 	public void saveNodeState(){
 		try{
 			FileWriter fw = new FileWriter("nodestate.txt", false);  // overwrite each time
@@ -334,7 +370,9 @@ public class Node {
 		}
 	}
 	
-	// recover from node failure
+	/**
+	 *  recover from node failure
+	 */
 	public void restoreNodeState(){
 		BufferedReader reader = null;
 		try {
@@ -387,7 +425,7 @@ public class Node {
 		        	numPL = Integer.parseInt(parts[1]);
 		        	plLimit = lineNo + numPL;
 		        }
-		        else if (lineNo > npLimit + 1 && lineNo <= plLimit && numPL > 0){
+		        else if (lineNo > npLimit + 1 && lineNo <= plLimit && numPL > 0){ // Restore PL's hashset
 		        	ArrayList<Integer> list = new ArrayList<Integer>();
 		        	for (int i = 10; i < parts.length; i++)
 		        		list.add(Integer.parseInt(parts[i]));
@@ -400,7 +438,7 @@ public class Node {
 		        	numNE = Integer.parseInt(parts[1]);
 		        	neLimit = lineNo + numNE;
 		        }
-		        else if (lineNo > plLimit + 1 && lineNo <=  neLimit && numNE > 0){
+		        else if (lineNo > plLimit + 1 && lineNo <=  neLimit && numNE > 0){ // restore NE's hashset
 		        	ArrayList<Integer> list = new ArrayList<Integer>();
 		        	for (int i = 10; i < parts.length; i++)
 		        		list.add(Integer.parseInt(parts[i]));
@@ -413,7 +451,7 @@ public class Node {
 		        	numAppt = Integer.parseInt(parts[1]);
 		        	apptLimit = lineNo + numAppt;
 		        }
-		        else if (lineNo > neLimit + 1 && lineNo <= apptLimit && numAppt > 0){
+		        else if (lineNo > neLimit + 1 && lineNo <= apptLimit && numAppt > 0){ // restore currentAppt hashset
 		        	ArrayList<Integer> list = new ArrayList<Integer>();
 		        	for (int i = 7; i < parts.length; i++)
 		        		list.add(Integer.parseInt(parts[i]));
@@ -431,7 +469,10 @@ public class Node {
 		}
 	}
 	
-	// insert appointment into dictionary
+	/**
+	 *  insert appointment into dictionary
+	 * @param appt appointment to be inserted
+	 */
 	public void insert(Appointment appt){
 		this.c++;
 		this.T[this.nodeId][this.nodeId] = c;
@@ -444,7 +485,10 @@ public class Node {
 		}
 	}
 	
-	// delete appointment from dictionary
+	/**
+	 *  delete appointment from dictionary
+	 * @param appt appointment to be deleted
+	 */
 	public void delete(Appointment appt){
 		this.c++;
 		this.T[this.nodeId][this.nodeId] = c;
@@ -464,12 +508,21 @@ public class Node {
 		}
 	}
 	
-	// checks if we know if node k has learned about event e
+	/**
+	 *  checks if we know if node k has learned about event e
+	 * @param Ti T matrix from node k
+	 * @param eR event record to check
+	 * @param k node id we want to check our knowledge of
+	 * @return true when we know that site k knows about this event
+	 */
 	public boolean hasRec(int Ti[][], EventRecord eR, int k){		
 		return Ti[k][eR.getNodeId()] >= eR.getTime();
 	}
 	
-	// creates NP, then sends <NP, T> to node k
+	/**
+	 *  creates NP, then sends <NP, T> to node k
+	 * @param k node to send to
+	 */
 	public void send(final int k){
 		// create NP to send
 		NP.clear();
@@ -500,6 +553,7 @@ public class Node {
 		} 
 		catch (ConnectException | UnknownHostException ce){
 			// send to process k failed
+			// create thread to keep trying
 			if (!sendFail[k]){  // only start if this hasn't already started
 				sendFail[k] = true;
 			
@@ -508,7 +562,7 @@ public class Node {
                     public synchronized void run() {
                     	while (sendFail[k]){
 	                        try {
-								Thread.sleep(5000);  // TODO not sure how long we actually want to wait here before checking crashed process again
+								Thread.sleep(60000);  
 								send(k);
 							} catch (InterruptedException e) {
 								e.printStackTrace();
@@ -526,7 +580,10 @@ public class Node {
         
 	}
 	
-	// receives <NP, T> from node k
+	/**
+	 *  receives <NP, T> from node k
+	 * @param clientSocket socket connection to receiving node
+	 */
 	@SuppressWarnings("unchecked")
 	public void receive(Socket clientSocket){
 		Set<EventRecord> NPk = null;
@@ -546,7 +603,6 @@ public class Node {
 				Tk = (int[][])objectInput.readObject();
 			}
 			else{
-				// TODO get objects in case of cancellation message
 				cancellation = true;
 				cancelAppt = (Appointment)objectInput.readObject();
 			}
@@ -578,7 +634,6 @@ public class Node {
 					for (Appointment appt:currentAppts){
 						EventRecord dR = containsAppointment(NE, appt);
 						if (dR != null && dR.getOperation().equals("delete")){
-							//currentAppts.remove(appt);  // can't remove while iterating
 							delAppts.add(appt);
 							// update calendar
 							for (Integer id:dR.getAppointment().getParticipants()) {
@@ -586,7 +641,6 @@ public class Node {
 									this.calendars[id][dR.getAppointment().getDay().ordinal()][j] = 0;
 								}
 							}
-							//writeToLog(dR);
 						}
 					}
 					// now actually remove appointments from currentAppts
@@ -597,7 +651,6 @@ public class Node {
 					for (EventRecord eR:NE){
 						writeToLog(eR); // want to write all events in NE to log
 						if (eR.getOperation().equals("insert")){
-							//writeToLog(eR);
 							EventRecord dR = containsAppointment(NE, eR.getAppointment());
 							if (dR == null){ // there's no 'delete()' for this appointment so add to currentAppts
 								// first check to see if the appointment conflicts with my schedule
@@ -635,15 +688,7 @@ public class Node {
 								}
 								
 							}
-							/*else {  // received an insert() and delete() for same appointment
-								writeToLog(dR);
-							}*/
-							
 						}
-						/*else if (eR.getOperation().equals("delete"))
-						{
-							writeToLog(eR);
-						}*/
 					}
 					
 					// update T
@@ -697,7 +742,11 @@ public class Node {
 		
 	}
 	
-	// send a message to node k that this appointment conflicts with previously scheduled node
+	/**
+	 *  send a message to node k that this appointment conflicts with previously scheduled node
+	 * @param appt appointment to cancel
+	 * @param k node to notify (should be the node that originally created appointment)
+	 */
 	public void sendCancellationMsg(Appointment appt, final int k){
 		try {
 			Socket socket = new Socket(hostNames[k], port);
@@ -724,7 +773,7 @@ public class Node {
                     public synchronized void run() {
                     	while (sendFail[k]){
 	                        try {
-								Thread.sleep(5000);  // TODO not sure how long we actually want to wait here before checking crashed process again
+								Thread.sleep(60000); 
 								send(k);
 							} catch (InterruptedException e) {
 								e.printStackTrace();
@@ -740,8 +789,13 @@ public class Node {
 		}
 	}
 	
-	// determine if a given appointment is the same as one in an EventRecord
-	// useful when trying to find the insert or delete of a given appointment
+	/**
+	 *  determine if a given appointment is the same as one in an EventRecord
+	 *  useful when trying to find the insert or delete of a given appointment
+	 * @param set The set to iterate through
+	 * @param appt the appointment to find
+	 * @return returns the appropriate event record if found, otherwise null
+	 */
 	public static EventRecord containsAppointment(Set<EventRecord> set, Appointment appt){
 		for (EventRecord eR:set){
 			if (eR.getAppointment().getApptID().equals(appt.getApptID()) && eR.getOperation().equals("delete"))
@@ -751,7 +805,7 @@ public class Node {
 	}
 
 	/**
-	 * @return the cantSched
+	 * @return cantSched
 	 */
 	public boolean isCantSched() {
 		return cantSched;
@@ -764,10 +818,16 @@ public class Node {
 		this.cantSched = cantSched;
 	}
 	
+	/**
+	 * @return badAppts
+	 */
 	public Set<Appointment> getBadAppts(){
 		return badAppts;
 	}
 	
+	/**
+	 * resets badAppts
+	 */
 	public void resetBadAppts(){
 		badAppts.clear();
 	}

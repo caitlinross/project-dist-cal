@@ -6,11 +6,13 @@
 
 import java.io.Serializable;
 
-
 @SuppressWarnings("serial")
 public class EventRecord implements Serializable{
 	/**
-	 * 
+	 * @param operation Either insert or delete operation
+	 * @param time The timestamp appointment was created (based on creator's clock)
+	 * @param nodeId The creator of appointment
+	 * @param Appointment for this event
 	 */
 	private String operation;
 	private int time;
@@ -18,7 +20,7 @@ public class EventRecord implements Serializable{
 	private Appointment appointment;
 	
 	/**
-	 * 
+	 * constructor to be used when creating event
 	 */
 	public EventRecord(String operation, int time, int nodeId) {
 		this.setOperation(operation);
@@ -26,6 +28,10 @@ public class EventRecord implements Serializable{
 		this.setNodeId(nodeId);
 	}
 	
+	/**
+	 *  constructor only to be used when creating an event while restoring a crashed node's state
+	 *  i.e. these events already existed but only need to be restored
+	 */
 	public EventRecord(String operation, int time, int nodeId, Appointment appointment) {
 		this.setOperation(operation);
 		this.setTime(time);

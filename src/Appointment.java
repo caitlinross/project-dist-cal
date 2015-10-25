@@ -25,8 +25,7 @@ public class Appointment implements Serializable, Comparable<Appointment> {
 	private int startIndex;
 	private int endIndex;
 	
-	
-	
+	// constructor for creating new appointment
 	public Appointment(String name, Day day, int start, int end, String sAMPM, String eAMPM, ArrayList<Integer> participants, int initNode) {
 		this.name = name;
 		this.day = day;
@@ -42,6 +41,7 @@ public class Appointment implements Serializable, Comparable<Appointment> {
 		Appointment.apptNo++;
 	}
 	
+	// constructor used when creating appointments while restoring node state
 	public Appointment(String name, Day day, int start, int end, String sAMPM, String eAMPM, String apptID, ArrayList<Integer> participants, int initNode) {
 		this.name = name;
 		this.day = day;
@@ -177,6 +177,12 @@ public class Appointment implements Serializable, Comparable<Appointment> {
 		return Appointment.apptNo;
 	}
 
+	/**
+	 * converts a time stamp to the appropriate calendar array index
+	 * @param time timestamp to convert
+	 * @param amPM am or pm?
+	 * @return
+	 */
 	public static int convertTime(int time, String amPM){
 		int index = 0;
 		if (time == 1200){

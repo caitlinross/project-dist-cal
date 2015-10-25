@@ -11,11 +11,12 @@ import java.util.*;
 public class Driver {
 	
 	/**
-	 * @param args
+	 * @param args node-setup-file.txt myID totalNodes recovery
 	 * cmdline call: Driver node-setup-file.txt myID totalNodes recovery
 	 * recovery: 0->new run, otherwise->recovery startup
 	 */
 	public static void main(String[] args) {
+		// set up the network information for all of the nodes
 		String filename = args[0]; // node setup file
 		int myID = Integer.parseInt(args[1]);
 		File file = new File(filename);
@@ -60,7 +61,7 @@ public class Driver {
 		//set up this node
 		final Node node = new Node(totalNodes, port, hostNames, myID, recovery);
 		
-		// set up this nodes serverSocket that continuously listens for other nodes on a new thread
+		// set up this node's serverSocket that continuously listens for other nodes on a new thread
 		Runnable listenThread = new Runnable(){
 			public synchronized void run() {
 				System.out.println("Start listening for other nodes");
@@ -87,7 +88,7 @@ public class Driver {
 		};
 		new Thread(listenThread).start();
         
-        // TODO add sanity checks on input or otherwise improve it
+		// loop to ask about adding, deleting, viewing appointments
 		while(true){
 			@SuppressWarnings("resource")
 			Scanner in = new Scanner(System.in);
