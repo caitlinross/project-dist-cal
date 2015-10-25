@@ -562,7 +562,7 @@ public class Node {
                     public synchronized void run() {
                     	while (sendFail[k]){
 	                        try {
-								Thread.sleep(60000);  
+								Thread.sleep(6000);  
 								send(k);
 							} catch (InterruptedException e) {
 								e.printStackTrace();
@@ -781,7 +781,7 @@ public class Node {
                     public synchronized void run() {
                     	while (sendFail[k]){
 	                        try {
-								Thread.sleep(60000); 
+								Thread.sleep(6000); 
 								send(k);
 							} catch (InterruptedException e) {
 								e.printStackTrace();

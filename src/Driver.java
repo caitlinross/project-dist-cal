@@ -125,12 +125,12 @@ public class Driver {
 				System.out.println("Please enter a start time in HHMM format in 30 minute increments");
 				start = in.nextInt();
 				in.nextLine();
-				System.out.println("AM or PM\n");
+				System.out.println("AM or PM");
 				sAMPM = in.nextLine().toUpperCase();
 				System.out.println("Please enter an end time in HHMM format in 30 minute increments");
 				end = in.nextInt();
 				in.nextLine();
-				System.out.println("AM or PM\n");
+				System.out.println("AM or PM");
 				eAMPM = in.nextLine().toUpperCase();
 				System.out.println("Please enter each participant; enter -1 when done");
 				int tmp = in.nextInt();
@@ -158,7 +158,7 @@ public class Driver {
 			
 			// before asking for next decision, report any appointments that weren't able to be scheduled
 			if (node.isCantSched()){
-				System.out.println("-------- WARNING --------");
+				System.out.println("\n-------- WARNING --------");
 				for (Appointment a:node.getBadAppts()){
 					System.out.println("Can't schedule appointment ID: " + a.getApptID());
 					System.out.println("Name: " + a.getName());
