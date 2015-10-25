@@ -762,6 +762,7 @@ public class Node {
 						found = true;
 				}
 				if (!found){
+					writeToLog(cancelER);
 					PL.add(cancelER);
 				}
 			}
@@ -819,7 +820,7 @@ public class Node {
 	public void sendCancellationMsg(String apptID, final int k){
 		EventRecord eR = null;
 		for (EventRecord fR:PL){
-			if (fR.getAppointment().getApptID().equals(apptID) && fR.getOperation().equals("insert"))
+			if (fR.getAppointment().getApptID().equals(apptID) && fR.getOperation().equals("delete"))
 				eR = fR;
 		}
 		if (eR != null){
