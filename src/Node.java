@@ -193,6 +193,9 @@ public class Node {
 			if (node != notifyingNode && node != this.nodeId){
 				sendCancellationMsg(appt, node);
 			}
+			else if (node == notifyingNode){
+				sendCancellationMsg(appt.getApptID(), notifyingNode);
+			}
 		}
 	}
 	
@@ -590,21 +593,25 @@ public class Node {
 		int Tk[][] = null;
 		int k = -1;
 		Appointment cancelAppt = null;
-		boolean cancellation = false;
-
+		EventRecord cancelER = null;
+		//boolean cancellation = false;
+		int cancel = -1;
 		try {
 			// get the objects from the message
 			InputStream in = clientSocket.getInputStream();
 			ObjectInputStream objectInput = new ObjectInputStream(in);
-			int cancel = objectInput.readInt();
+			cancel = objectInput.readInt();
 			if (cancel == 0){
-				cancellation = false;
+				//cancellation = false;
 				NPk = (HashSet<EventRecord>)objectInput.readObject();
 				Tk = (int[][])objectInput.readObject();
 			}
-			else{
-				cancellation = true;
+			else if (cancel == 1){
+				//cancellation = true;
 				cancelAppt = (Appointment)objectInput.readObject();
+			}
+			else if (cancel == 2){
+				cancelER = (EventRecord)objectInput.readObject();
 			}
 			k = objectInput.readInt();
 			objectInput.close();
@@ -616,7 +623,7 @@ public class Node {
 			e.printStackTrace();
 		} 
 		
-		if (!cancellation){
+		if (cancel == 0){
 			// handle the appointments received
 			if (NPk != null){
 				synchronized(lock){
@@ -730,7 +737,7 @@ public class Node {
 				}// end synchronize
 			}
 		}
-		else { // received appointment to be cancelled because of conflict
+		else if (cancel == 1) { // received appointment to be cancelled because of conflict
 			boolean found = false;
 			synchronized(lock){
 				// check that appointment isn't already in badAppts
@@ -746,6 +753,18 @@ public class Node {
 			}
 			if (!found && cancelAppt != null)
 				deleteOldAppointment(cancelAppt, k);
+		}
+		else if (cancel == 2){
+			boolean found = false;
+			synchronized(lock){
+				for (EventRecord fR:PL){
+					if (fR.getAppointment().getApptID().equals(cancelER.getAppointment().getApptID()) && fR.getOperation().equals("delete"))
+						found = true;
+				}
+				if (!found){
+					PL.add(cancelER);
+				}
+			}
 		}
 		
 	}
@@ -794,6 +813,55 @@ public class Node {
 		}
 		catch (IOException e) {
 			e.printStackTrace();
+		}
+	}
+	
+	public void sendCancellationMsg(String apptID, final int k){
+		EventRecord eR = null;
+		for (EventRecord fR:PL){
+			if (fR.getAppointment().getApptID().equals(apptID) && fR.getOperation().equals("insert"))
+				eR = fR;
+		}
+		if (eR != null){
+			try {
+				Socket socket = new Socket(hostNames[k], port);
+				OutputStream out = socket.getOutputStream();
+				ObjectOutputStream objectOutput = new ObjectOutputStream(out);
+				objectOutput.writeInt(2);  // 2 means sending back delete event record to each notifying node
+				synchronized(lock){
+					objectOutput.writeObject(eR);
+					//objectOutput.writeObject(T);
+				}
+				objectOutput.writeInt(nodeId);
+				objectOutput.close();
+				out.close();
+				socket.close();
+				sendFail[k] = false;
+			} 
+			catch (ConnectException | UnknownHostException ce){
+				// send to process k failed
+				if (!sendFail[k]){  // only start if this hasn't already started
+					sendFail[k] = true;
+				
+					// start a thread that periodically checks for k to recover and send again
+					Runnable runnable = new Runnable() {
+	                    public synchronized void run() {
+	                    	while (sendFail[k]){
+		                        try {
+									Thread.sleep(6000); 
+									send(k);
+								} catch (InterruptedException e) {
+									e.printStackTrace();
+								}
+	                    	}
+	                    }
+	                };
+	                new Thread(runnable).start();
+				}
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	
