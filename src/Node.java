@@ -731,12 +731,20 @@ public class Node {
 			}
 		}
 		else { // received appointment to be cancelled because of conflict
+			boolean found = false;
 			synchronized(lock){
-				this.setCantSched(true);
-				if (cancelAppt != null)
-					badAppts.add(cancelAppt);
+				// check that appointment isn't already in badAppts
+				for (Appointment a:badAppts){
+					if (a.getApptID().equals(cancelAppt.getApptID()))
+						found = true;
+				}
+				if (!found){
+					this.setCantSched(true);
+					if (cancelAppt != null)
+						badAppts.add(cancelAppt);
+				}
 			}
-			if (cancelAppt != null)
+			if (!found && cancelAppt != null)
 				deleteOldAppointment(cancelAppt, k);
 		}
 		
