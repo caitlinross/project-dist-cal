@@ -452,7 +452,7 @@ public class Node {
 			PL.add(eR);
 			Appointment delAppt = null;
 			for (Appointment a:currentAppts){
-				if (a.getApptID() == appt.getApptID()){
+				if (a.getApptID().equals(appt.getApptID())){
 					delAppt = a;
 				}
 			}
@@ -735,7 +735,7 @@ public class Node {
 	// useful when trying to find the insert or delete of a given appointment
 	public static EventRecord containsAppointment(Set<EventRecord> set, Appointment appt){
 		for (EventRecord eR:set){
-			if (eR.getAppointment().equals(appt) && eR.getOperation().equals("delete"))
+			if (eR.getAppointment().getApptID().equals(appt.getApptID()) && eR.getOperation().equals("delete"))
 				return eR;
 		}
 		return null;
