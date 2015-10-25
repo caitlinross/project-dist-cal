@@ -584,7 +584,7 @@ public class Node {
 									this.calendars[id][dR.getAppointment().getDay().ordinal()][j] = 0;
 								}
 							}
-							writeToLog(dR);
+							//writeToLog(dR);
 						}
 					}
 					// now actually remove appointments from currentAppts
@@ -593,8 +593,9 @@ public class Node {
 					}
 					// check for events in NE that need to be inserted into currentAppts
 					for (EventRecord eR:NE){
+						writeToLog(eR); // want to write all events in NE to log
 						if (eR.getOperation().equals("insert")){
-							writeToLog(eR);
+							//writeToLog(eR);
 							EventRecord dR = containsAppointment(NE, eR.getAppointment());
 							if (dR == null){ // there's no 'delete()' for this appointment so add to currentAppts
 								// first check to see if the appointment conflicts with my schedule
@@ -632,11 +633,15 @@ public class Node {
 								}
 								
 							}
-							else {  // received an insert() and delete() for same appointment
+							/*else {  // received an insert() and delete() for same appointment
 								writeToLog(dR);
-							}
+							}*/
 							
 						}
+						/*else if (eR.getOperation().equals("delete"))
+						{
+							writeToLog(eR);
+						}*/
 					}
 					
 					// update T
