@@ -470,6 +470,7 @@ public class Node {
 	// creates NP, then sends <NP, T> to node k
 	public void send(final int k){
 		// create NP to send
+		NP.clear();
 		synchronized(lock){
 			for (EventRecord eR:PL){
 				if (!hasRec(this.T, eR, k)){
@@ -562,6 +563,7 @@ public class Node {
 			if (NPk != null){
 				synchronized(lock){
 					// update NE
+					NE.clear();
 					for (EventRecord fR:NPk){
 						if (!hasRec(T, fR, nodeId)){
 							NE.add(fR);

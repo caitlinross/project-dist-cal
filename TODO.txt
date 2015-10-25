@@ -9,6 +9,9 @@ Very simple UI set up for creating appointments
 
 What still needs to be done:
 - appointment conflict resolution (Caitlin)
+    -- mostly working for two nodes
+    -- if there's a conflicting appointment sent, the originating node correctly creates a delete event for the appointment, and the appointment no longer shows in any calendar, but other node does seem to get the delete() event record for that appointment.  it's not really a huge issue
+    -- still need to test out on more than 2 nodes
 - test on AWS
 - write report of design and implementation
 
