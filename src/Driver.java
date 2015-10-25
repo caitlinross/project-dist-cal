@@ -94,7 +94,7 @@ public class Driver {
 			String action;
 			String name;
 
-			System.out.println("Would you like to add or delete an appointment, or print the calendar\n?");
+			System.out.println("Would you like to add or delete an appointment, or print the calendar? (type 'add', 'delete', or 'print')");
 			action = in.nextLine().trim();
 			if (action.equals("add")) {
 				int start;
@@ -103,9 +103,9 @@ public class Driver {
 				String eAMPM;
 				Day day;
 				ArrayList<Integer> participants = new ArrayList<Integer>();
-				System.out.println("Please enter an appointment name\n");
+				System.out.println("Please enter an appointment name");
 				name = in.nextLine();
-				System.out.println("Please enter the appointment day\n");
+				System.out.println("Please enter the appointment day");
 				String tmpDay = in.nextLine().toLowerCase();
 				if (tmpDay.equals("sunday") || tmpDay.equals("sun"))
 					day = Day.SUNDAY;
@@ -121,28 +121,29 @@ public class Driver {
 					day = Day.FRIDAY;
 				else
 					day = Day.SATURDAY;
-				System.out.println("Please enter a start time in HHMM format in 30 minute increments\n");
+				System.out.println("Please enter a start time in HHMM format in 30 minute increments");
 				start = in.nextInt();
 				in.nextLine();
 				System.out.println("AM or PM\n");
 				sAMPM = in.nextLine().toUpperCase();
-				System.out.println("Please enter an end time in HHMM format in 30 minute increments\n");
+				System.out.println("Please enter an end time in HHMM format in 30 minute increments");
 				end = in.nextInt();
 				in.nextLine();
 				System.out.println("AM or PM\n");
 				eAMPM = in.nextLine().toUpperCase();
-				System.out.println("Please enter each participant; enter -1 when done\n");
+				System.out.println("Please enter each participant; enter -1 when done");
 				int tmp = in.nextInt();
 				while (tmp != -1){
 					participants.add(tmp);
-					System.out.println("Enter next participant, or -1 if done\n");
+					System.out.println("Enter next participant, or -1 if done");
 					tmp = in.nextInt();
 				}
 				
 				node.createNewAppointment(participants, name, day, start, end, sAMPM, eAMPM);
 			}
 			else if (action.equals("delete")) {
-				System.out.println("Please enter the ID number of the appointment (print current appointments to show ID number)\n");
+				node.printCalendar();
+				System.out.println("Please enter the ID number of the appointment (print current appointments to show ID number)");
 				String apptId = in.nextLine();
 				node.deleteOldAppointment(apptId);
 				
@@ -151,16 +152,17 @@ public class Driver {
 					node.printCalendar();
 			}
 			else {
-				System.out.println("Action not recognized, please enter 'add', 'delete', or 'print'\n");
+				System.out.println("Action not recognized, please enter 'add', 'delete', or 'print'");
 			}
 			
 			// before asking for next decision, report any appointments that weren't able to be scheduled
 			if (node.isCantSched()){
+				System.out.println("-------- WARNING --------");
 				for (Appointment a:node.getBadAppts()){
 					System.out.println("Can't schedule appointment ID: " + a.getApptID());
 					System.out.println("Name: " + a.getName());
 					System.out.println("time: " + a.getStart() + a.getsAMPM() + " - " + a.getEnd() + a.geteAMPM());
-					
+					System.out.println("\n");
 				}
 				node.resetBadAppts();
 				node.setCantSched(false);

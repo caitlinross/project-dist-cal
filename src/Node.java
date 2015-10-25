@@ -170,9 +170,10 @@ public class Node {
 	//print out the calendar to the terminal
 	public void printCalendar() {
 		//now have set of all appointments event records which are currently in calendar
-		//next: get ers by day, and print them
+		//next: get eRs by day, and print them
 		ArrayList<Appointment> apptList = new ArrayList<Appointment>();
 		for (int i = 0; i < 7; i++) {
+			System.out.println("------- " + Day.values()[i] + " -------");
 			for (Appointment appt:this.currentAppts) {
 				if (appt.getDay().ordinal() == i) {
 					apptList.add(appt);
@@ -194,6 +195,7 @@ public class Node {
 				System.out.println("Participants: " + partic);
 				System.out.println("Start time: " + a.getStart() + " " + a.getsAMPM());
 				System.out.println("End time: "+ a.getEnd() + " " + a.geteAMPM());
+				System.out.println();
 			}
 			apptList.clear();
 		}
