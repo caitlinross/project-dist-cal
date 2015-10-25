@@ -685,7 +685,7 @@ public class Node {
 					badAppts.add(cancelAppt);
 			}
 			if (cancelAppt != null)
-				delete(cancelAppt);
+				deleteOldAppointment(cancelAppt, k);
 		}
 		
 	}
