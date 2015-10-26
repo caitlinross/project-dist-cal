@@ -766,6 +766,7 @@ public class Node {
 					PL.add(cancelER);
 				}
 			}
+			saveNodeState();
 		}
 		
 	}
